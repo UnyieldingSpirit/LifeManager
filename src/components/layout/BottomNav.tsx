@@ -159,7 +159,7 @@ export default function BottomNav() {
                     style={{ 
                       background: 'var(--primary-subtle)',
                       border: '1px solid var(--primary)',
-                      borderOpacity: 0.2,
+                      // borderOpacity: 0.2,
                     }}
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />

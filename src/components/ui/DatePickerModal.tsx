@@ -17,6 +17,7 @@ import {
   isToday,
   isBefore,
   startOfDay,
+  Locale,
 } from 'date-fns';
 import { ru, enUS, uz } from 'date-fns/locale';
 import { useTranslation } from '@/hooks/useTranslation';

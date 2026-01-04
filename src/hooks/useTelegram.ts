@@ -13,6 +13,11 @@ interface TelegramUser {
 }
 
 interface TelegramWebApp {
+  disableVerticalSwipes(arg0: boolean): unknown;
+  disableVerticalSwipes(arg0: boolean): unknown;
+  requestFullscreen: any;
+  enableClosingConfirmation(arg0: boolean): unknown;
+  enableClosingConfirmation(arg0: boolean): unknown;
   initData: string;
   initDataUnsafe: {
     user?: TelegramUser;
@@ -63,13 +68,13 @@ interface TelegramWebApp {
   platform: string;
 }
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebApp;
-    };
-  }
-}
+// declare global {
+//   interface Window {
+//     Telegram?: {
+//       WebApp?: TelegramWebApp;
+//     };
+//   }
+// }
 
 export function useTelegram() {
   const [tg, setTg] = useState<TelegramWebApp | null>(null);

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format, Locale, parseISO } from 'date-fns';
 import { ru, enUS, uz } from 'date-fns/locale';
 import TaskCard from '@/components/tasks/TaskCard';
 import { useTaskStore } from '@/store/taskStore';

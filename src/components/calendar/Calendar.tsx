@@ -14,6 +14,7 @@ import {
   isSameDay,
   addMonths,
   subMonths,
+  Locale,
 } from 'date-fns';
 import { ru, enUS, uz } from 'date-fns/locale';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -52,7 +53,7 @@ export default function Calendar() {
   }, [currentMonth, weekStartsOn]);
 
   const weekDays = useMemo(() => {
-    const days = t('calendar.dayNames', { returnObjects: true }) as string[];
+    const days = t('calendar.dayNames',) as unknown as string[];
     if (weekStartsOn === 1) {
       // Move Sunday to end
       return [...days.slice(1), days[0]];
