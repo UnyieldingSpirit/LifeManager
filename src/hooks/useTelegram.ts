@@ -2,79 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
-  is_premium?: boolean;
-}
-
-interface TelegramWebApp {
-  disableVerticalSwipes(arg0: boolean): unknown;
-  disableVerticalSwipes(arg0: boolean): unknown;
-  requestFullscreen: any;
-  enableClosingConfirmation(arg0: boolean): unknown;
-  enableClosingConfirmation(arg0: boolean): unknown;
-  initData: string;
-  initDataUnsafe: {
-    user?: TelegramUser;
-    start_param?: string;
-  };
-  version: string;
-  colorScheme: 'light' | 'dark';
-  themeParams: Record<string, string>;
-  isExpanded: boolean;
-  viewportHeight: number;
-  viewportStableHeight: number;
-  ready: () => void;
-  expand: () => void;
-  close: () => void;
-  showAlert: (message: string, callback?: () => void) => void;
-  showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void;
-  showPopup: (params: any, callback?: (id: string) => void) => void;
-  sendData: (data: string) => void;
-  HapticFeedback?: {
-    impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
-    notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
-    selectionChanged: () => void;
-  };
-  BackButton?: {
-    isVisible: boolean;
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-    offClick: (callback?: () => void) => void;
-  };
-  MainButton?: {
-    text: string;
-    color: string;
-    textColor: string;
-    isVisible: boolean;
-    isActive: boolean;
-    isProgressVisible: boolean;
-    setText: (text: string) => void;
-    show: () => void;
-    hide: () => void;
-    enable: () => void;
-    disable: () => void;
-    showProgress: (leaveActive?: boolean) => void;
-    hideProgress: () => void;
-    onClick: (callback: () => void) => void;
-    offClick: (callback?: () => void) => void;
-  };
-  platform: string;
-}
-
-// declare global {
-//   interface Window {
-//     Telegram?: {
-//       WebApp?: TelegramWebApp;
-//     };
-//   }
-// }
+import type { TelegramWebApp, TelegramUser } from '@/types/telegram';
 
 export function useTelegram() {
   const [tg, setTg] = useState<TelegramWebApp | null>(null);
@@ -83,7 +11,7 @@ export function useTelegram() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const webApp = window.Telegram.WebApp;
+      const webApp = window.Telegram.WebApp as TelegramWebApp;
       setTg(webApp);
 
       if (webApp.initDataUnsafe?.user) {
@@ -111,10 +39,10 @@ export function useTelegram() {
       try {
         switch (type) {
           case 'impact':
-            tg.HapticFeedback.impactOccurred((style as any) || 'medium');
+            tg.HapticFeedback.impactOccurred((style as 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') || 'medium');
             break;
           case 'notification':
-            tg.HapticFeedback.notificationOccurred((style as any) || 'success');
+            tg.HapticFeedback.notificationOccurred((style as 'error' | 'success' | 'warning') || 'success');
             break;
           case 'selection':
             tg.HapticFeedback.selectionChanged();

@@ -9,8 +9,6 @@ declare global {
     }
 }
 
-// Type definition for the Telegram context
-
 export type HapticFeedbackType = 'impact' | 'notification' | 'selection';
 
 export interface TelegramUser {
@@ -20,7 +18,7 @@ export interface TelegramUser {
     username?: string;
     language_code?: string;
     is_premium?: boolean;
-    [key: string]: any; // For any additional properties that might exist
+    [key: string]: any;
 }
 
 export interface TelegramWebAppInitData {
@@ -29,37 +27,77 @@ export interface TelegramWebAppInitData {
     auth_date?: number;
     hash?: string;
     start_param?: string;
-    [key: string]: any; // For any additional properties
+    [key: string]: any;
 }
 
 export interface HapticFeedback {
-    impactOccurred: (style: string) => void;
-    notificationOccurred: (type: string) => void;
+    impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
+    notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
     selectionChanged: () => void;
+}
+
+export interface BackButton {
+    isVisible: boolean;
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback?: () => void) => void;
+}
+
+export interface MainButton {
+    text: string;
+    color: string;
+    textColor: string;
+    isVisible: boolean;
+    isActive: boolean;
+    isProgressVisible: boolean;
+    setText: (text: string) => void;
+    show: () => void;
+    hide: () => void;
+    enable: () => void;
+    disable: () => void;
+    showProgress: (leaveActive?: boolean) => void;
+    hideProgress: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback?: () => void) => void;
 }
 
 export interface TelegramWebApp {
     initData: string;
     initDataUnsafe: TelegramWebAppInitData;
     version: string;
-    colorScheme: string;
-    themeParams: any;
+    platform: string;
+    colorScheme: 'light' | 'dark';
+    themeParams: Record<string, string>;
     isExpanded: boolean;
     viewportHeight: number;
     viewportStableHeight: number;
-    headerColor: string;
-    backgroundColor: string;
+    headerColor?: string;
+    backgroundColor?: string;
+    
+    // Methods
     ready: () => void;
     expand: () => void;
     close: () => void;
     showAlert: (message: string, callback?: () => void) => void;
     showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void;
     showPopup: (params: any, callback?: (id: string) => void) => void;
-    sendData: (data: any) => void;
+    sendData: (data: string) => void;
     openLink: (url: string, options?: any) => void;
     openTelegramLink: (url: string) => void;
+    
+    // Optional methods (may not exist in all versions)
+    requestFullscreen?: () => void;
+    disableVerticalSwipes?: (value: boolean) => void;
+    enableClosingConfirmation?: (value: boolean) => void;
+    
+    // Optional components
     HapticFeedback?: HapticFeedback;
-    [key: string]: any; // For any additional methods or properties
+    BackButton?: BackButton;
+    MainButton?: MainButton;
+    
+    // Allow any additional properties
+    [key: string]: any;
 }
 
 export interface TelegramContextType {
@@ -69,8 +107,7 @@ export interface TelegramContextType {
     isTelegram: boolean;
     sendData: (data: any) => boolean;
     showAlert: (message: string) => boolean;
-    hapticFeedback: (type: HapticFeedbackType) => boolean;
+    hapticFeedback: (type: HapticFeedbackType, style?: string) => boolean;
 }
 
-// This should be the interface that the useTelegram hook returns
-export interface UseTelegramReturn extends TelegramContextType { }
+export interface UseTelegramReturn extends TelegramContextType {}
