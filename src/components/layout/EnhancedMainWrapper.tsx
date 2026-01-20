@@ -7,6 +7,12 @@ import TelegramWebAppInitializer from './TelegramWebAppInitializer';
 
 // === TaskFlow импорты ===
 import BottomNav from './BottomNav';
+import FAB from './FAB';
+import ToastContainer from '@/components/ui/Toast';
+import BottomSheet from '@/components/ui/BottomSheet';
+import AddTaskForm from '@/components/tasks/AddTaskForm';
+import { useUIStore } from '@/store/uiStore';
+import { useUserStore } from '@/store/userStore';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -23,7 +29,26 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   // === TaskFlow hooks ===
   const { t } = useTranslation();
   const { colorScheme, isReady } = useTelegram();
+  const setTheme = useUserStore((state) => state.setTheme);
+  const theme = useUserStore((state) => state.profile?.settings.theme || 'system');
+  const isBottomSheetOpen = useUIStore((state) => state.isBottomSheetOpen);
+  const bottomSheetContent = useUIStore((state) => state.bottomSheetContent);
+  const closeBottomSheet = useUIStore((state) => state.closeBottomSheet);
 
+  // === TaskFlow: Sync Telegram theme ===
+  useEffect(() => {
+    if (isReady && theme === 'system') {
+      const root = document.documentElement;
+      root.classList.remove('light', 'dark');
+      root.classList.add(colorScheme);
+    }
+  }, [colorScheme, isReady, theme]);
+
+  useEffect(() => {
+    setTheme(theme);
+  }, [theme, setTheme]);
+
+  // === Оригинальная логика: Отслеживаем изменение пути ===
   useEffect(() => {
     if (prevPath && prevPath !== pathname) {
       handleRouteChange();
@@ -59,19 +84,43 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     }
   };
 
+  // Функция для обработки изменения маршрута
   const handleRouteChange = () => {
     setIsLoading(true);
     
+    // Сбрасываем скролл вверх
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
     
+    // Скрываем лоадер после перехода
     setTimeout(() => {
       setIsLoading(false);
     }, 600);
   };
 
+  // === TaskFlow: Bottom sheet helpers ===
+  const getBottomSheetTitle = () => {
+    switch (bottomSheetContent) {
+      case 'addTask':
+        return t('tasks.newTask');
+      case 'taskDetails':
+        return t('tasks.title');
+      case 'filters':
+        return 'Фильтры';
+      default:
+        return undefined;
+    }
+  };
 
+  const renderBottomSheetContent = () => {
+    switch (bottomSheetContent) {
+      case 'addTask':
+        return <AddTaskForm />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
@@ -119,7 +168,18 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
         )}
       </main>
 
+      {/* === TaskFlow компоненты === */}
       <BottomNav />
+      <FAB />
+      <ToastContainer />
+      
+      <BottomSheet
+        isOpen={isBottomSheetOpen}
+        onClose={closeBottomSheet}
+        title={getBottomSheetTitle()}
+      >
+        {renderBottomSheetContent()}
+      </BottomSheet>
     </>
   );
 }
