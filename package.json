@@ -1,5 +1,5 @@
 {
-  "name": "taskflow",
+  "name": "dealer-manager",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -12,9 +12,10 @@
     "@heroicons/react": "^2.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.6.3",
-    "next": "^15.5.7",
+    "next": "^15.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "recharts": "^2.15.0",
     "uuid": "^11.0.0",
     "zustand": "^5.0.3"
   },

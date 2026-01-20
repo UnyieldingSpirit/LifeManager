@@ -5,15 +5,15 @@ import Script from 'next/script';
 import EnhancedMainWrapper from '../components/layout/EnhancedMainWrapper';
 
 export const metadata: Metadata = {
-  title: 'TaskFlow - Менеджер задач',
-  description: 'Управляйте задачами, напоминаниями и событиями',
-  other: {
-    'user-scalable': '0',
-    'apple-mobile-web-app-capable': 'yes',
-    'viewport-fit': 'cover',
-    'HandheldFriendly': 'true',
+  title: 'Dealer Manager',
+  description: 'Премиальный учёт финансов и жизни',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Dealer Manager',
   },
 };
+
 
 export default function RootLayout({
   children,
