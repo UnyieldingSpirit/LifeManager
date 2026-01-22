@@ -132,7 +132,7 @@ export default function ListsPage() {
   };
   
   const deleteItem = (listId: string, itemId: string) => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning')
     setLists(prev => prev.map(list => list.id === listId ? { ...list, items: list.items.filter(i => i.id !== itemId) } : list));
     if (selectedList?.id === listId) {
       setSelectedList(prev => prev ? { ...prev, items: prev.items.filter(i => i.id !== itemId) } : null);
@@ -151,7 +151,7 @@ export default function ListsPage() {
   };
   
   const deleteList = (listId: string) => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning')
     setLists(prev => prev.filter(l => l.id !== listId));
     if (selectedList?.id === listId) setSelectedList(null);
     addToast({ type: 'info', message: language === 'ru' ? 'Список удалён' : 'List deleted' });

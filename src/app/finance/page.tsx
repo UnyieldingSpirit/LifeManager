@@ -133,7 +133,7 @@ export default function FinancePage() {
     if (customDateStart && customDateEnd) {
       setPeriod('custom');
       setShowDatePicker(false);
-      hapticFeedback?.('success');
+     hapticFeedback?.('notification', 'success')
     }
   };
 

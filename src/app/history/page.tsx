@@ -148,7 +148,7 @@ export default function HistoryPage() {
   }, [transactions]);
   
   const handleDelete = (id: string) => {
-    hapticFeedback?.('warning');
+   hapticFeedback?.('notification', 'warning')
     deleteTransaction(id);
     addToast({ type: 'info', message: language === 'ru' ? 'Транзакция удалена' : 'Transaction deleted' });
   };

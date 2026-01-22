@@ -118,7 +118,7 @@ export default function ContactsPage() {
   };
   
   const handleDelete = (id: string, name: string) => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning')
     deleteContact(id);
     addToast({ type: 'info', message: `${language === 'ru' ? 'Удалено:' : 'Deleted:'} ${name}` });
   };

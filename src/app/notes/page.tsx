@@ -66,7 +66,7 @@ export default function NotesPage() {
   const otherNotes = filteredNotes.filter(n => !n.isPinned);
   
   const handleDelete = (id: string, title: string) => {
-    hapticFeedback?.('warning');
+   hapticFeedback?.('notification', 'warning')
     deleteNote(id);
     addToast({ type: 'info', message: `${language === 'ru' ? 'Удалено:' : 'Deleted:'} ${title || 'Заметка'}` });
   };

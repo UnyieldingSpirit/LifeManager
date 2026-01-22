@@ -91,13 +91,13 @@ export default function TelegramWebAppInitializer(): JSX.Element | null {
 
         // Общие настройки (применяются всегда)
         if (typeof tg.enableClosingConfirmation === 'function') {
-          tg.enableClosingConfirmation(true);
+          tg.enableClosingConfirmation();
         }
         
         // НЕ вызываем полноэкранный режим для десктопа
-        if (!isDesktop && typeof tg.requestFullscreen === 'function') {
+        if (!isDesktop && typeof (tg as any).requestFullscreen === 'function') {
           console.log('Activating fullscreen (mobile only)');
-          tg.requestFullscreen();
+          (tg as any).requestFullscreen();
         } else {
           console.log('Skipping fullscreen (desktop client detected)');
         }
@@ -127,8 +127,8 @@ export default function TelegramWebAppInitializer(): JSX.Element | null {
           }
 
           // Отключение вертикальных свайпов
-          if (typeof tg.disableVerticalSwipes === 'function') {
-            tg.disableVerticalSwipes(true);
+          if (typeof (tg as any).disableVerticalSwipes === 'function') {
+            (tg as any).disableVerticalSwipes(true);
           }
           
           // Настройка viewport для мобильных устройств
@@ -195,7 +195,7 @@ export default function TelegramWebAppInitializer(): JSX.Element | null {
         // Отключаем обработчик кнопки "Назад"
         const backButton = window.Telegram?.WebApp?.BackButton;
         if (backButton && typeof backButton.offClick === 'function') {
-          backButton.offClick();
+          backButton.offClick(handleBackRef.current);
         }
       } catch (error) {
         console.error('Ошибка при очистке ресурсов:', error);

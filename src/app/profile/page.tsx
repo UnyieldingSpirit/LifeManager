@@ -30,6 +30,8 @@ export default function ProfilePage() {
   const profile = useStore((s) => s.profile);
   const transactions = useStore((s) => s.transactions);
   const updateProfile = useStore((s) => s.updateProfile);
+  const updateSettings = useStore((s) => s.updateSettings);
+  const updateFinance = useStore((s) => s.updateFinance);
   const resetStore = useStore((s) => s.resetStore);
   const addToast = useStore((s) => s.addToast);
   
@@ -44,27 +46,27 @@ export default function ProfilePage() {
   
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     hapticFeedback?.('selection');
-    updateProfile({ settings: { ...profile?.settings, theme: newTheme } });
+    updateSettings({ theme: newTheme });
     setShowThemeModal(false);
     addToast({ type: 'success', message: language === 'ru' ? 'Тема изменена' : 'Theme changed' });
   };
   
   const handleLanguageChange = (newLang: 'ru' | 'en') => {
     hapticFeedback?.('selection');
-    updateProfile({ settings: { ...profile?.settings, language: newLang } });
+    updateSettings({ language: newLang });
     setShowLangModal(false);
     addToast({ type: 'success', message: newLang === 'ru' ? 'Язык изменён' : 'Language changed' });
   };
   
   const handleCurrencyChange = (newCurrency: string) => {
     hapticFeedback?.('selection');
-    updateProfile({ finance: { ...profile?.finance, currency: newCurrency as any } });
+    updateFinance({ currency: newCurrency });
     setShowCurrencyModal(false);
     addToast({ type: 'success', message: language === 'ru' ? 'Валюта изменена' : 'Currency changed' });
   };
   
   const handleReset = () => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning');
     if (confirm(language === 'ru' ? 'Вы уверены? Все данные будут удалены.' : 'Are you sure? All data will be deleted.')) {
       resetStore();
       router.push('/onboarding');

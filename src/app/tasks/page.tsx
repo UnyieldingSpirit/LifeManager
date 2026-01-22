@@ -135,7 +135,7 @@ export default function TasksPage() {
   }), [tasks, groupedTasks]);
   
   const handleToggle = (id: string, title: string, wasCompleted: boolean) => {
-    hapticFeedback?.(wasCompleted ? 'selection' : 'success');
+    if (wasCompleted) { hapticFeedback?.('selection'); } else { hapticFeedback?.('notification', 'success'); }
     toggleTaskComplete(id);
     if (!wasCompleted) {
       addToast({ type: 'success', message: `✅ ${title}` });
@@ -143,7 +143,7 @@ export default function TasksPage() {
   };
   
   const handleDelete = (id: string) => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning');
     deleteTask(id);
     addToast({ type: 'info', message: language === 'ru' ? 'Задача удалена' : 'Task deleted' });
   };

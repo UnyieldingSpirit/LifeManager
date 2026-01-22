@@ -1,7 +1,22 @@
 // src/lib/constants.ts
-// Централизованные константы для LifeLedger
 
-import { Category, Currency } from '@/types/finance';
+// Локальные типы для констант
+export interface Currency {
+  code: string;
+  name: string;
+  symbol: string;
+  flag: string;
+  locale: string;
+}
+
+export interface Category {
+  id: string;
+  name: { ru: string; en: string; uz: string };
+  icon: string;
+  color: string;
+  type: 'expense' | 'income';
+  budgetSuggestion?: number;
+}
 
 // ============================================================================
 // ВАЛЮТЫ

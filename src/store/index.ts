@@ -147,6 +147,9 @@ interface AppState {
   openBottomSheet: (content: BottomSheetState['content']) => void;
   closeBottomSheet: () => void;
   setLoading: (loading: boolean) => void;
+  
+  // ========== RESET ==========
+  resetStore: () => void;
 }
 
 // ============================================================================
@@ -813,6 +816,33 @@ export const useStore = create<AppState>()(
       
       setLoading: (loading) => {
         set({ isLoading: loading });
+      },
+      
+      // ========== RESET ==========
+      resetStore: () => {
+        set({
+          profile: null,
+          isOnboarded: false,
+          transactions: [],
+          transactionFilters: defaultTransactionFilters,
+          goals: [],
+          debts: [],
+          tasks: [],
+          projects: [],
+          events: [],
+          habits: [],
+          habitLogs: [],
+          notes: [],
+          noteFolders: [],
+          contacts: [],
+          toasts: [],
+          bottomSheet: { isOpen: false, content: null },
+          isLoading: false,
+        });
+        // Очищаем localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('lifeledger-store');
+        }
       },
     }),
     {

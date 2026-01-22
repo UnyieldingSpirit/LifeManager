@@ -262,18 +262,18 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitTransaction = () => {
     if (!txAmount || !txCategory) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Заполните все поля' : 'Fill all fields' });
       return;
     }
     
     const numAmount = parseFloat(txAmount.replace(/[^0-9.]/g, ''));
     if (isNaN(numAmount) || numAmount <= 0) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       return;
     }
     
-    hapticFeedback?.('success');
+   hapticFeedback?.('notification', 'success')
     addTransaction({
       type: txType,
       amount: numAmount,
@@ -289,12 +289,12 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitTask = () => {
     if (!taskTitle.trim()) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Введите название задачи' : 'Enter task title' });
       return;
     }
     
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     addTask({
       title: taskTitle,
       description: taskDescription,
@@ -310,12 +310,12 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitHabit = () => {
     if (!habitName.trim()) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Введите название привычки' : 'Enter habit name' });
       return;
     }
     
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     addHabit({
       name: habitName,
       icon: habitIcon,
@@ -332,12 +332,12 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitNote = () => {
     if (!noteContent.trim() && !noteTitle.trim()) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Введите текст заметки' : 'Enter note text' });
       return;
     }
     
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     addNote({
       title: noteTitle || (language === 'ru' ? 'Без названия' : 'Untitled'),
       content: noteContent,
@@ -351,12 +351,12 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitContact = () => {
     if (!contactName.trim()) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Введите имя контакта' : 'Enter contact name' });
       return;
     }
     
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     addContact({
       name: contactName,
       phone: contactPhone || undefined,
@@ -377,12 +377,12 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const handleSubmitEvent = () => {
     if (!eventTitle.trim()) {
-      hapticFeedback?.('error');
+      hapticFeedback?.('notification', 'error');
       addToast({ type: 'warning', message: language === 'ru' ? 'Введите название события' : 'Enter event title' });
       return;
     }
     
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     addEvent({
       title: eventTitle,
       date: eventDate,

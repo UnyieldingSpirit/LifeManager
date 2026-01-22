@@ -64,7 +64,7 @@ export default function HabitsPage() {
   }), [habits, habitsWithStatus]);
   
   const handleLog = (habitId: string, habitName: string) => {
-    hapticFeedback?.('success');
+    hapticFeedback?.('notification', 'success')
     logHabit(habitId, 1);
     addToast({ 
       type: 'success', 

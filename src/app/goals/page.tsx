@@ -33,7 +33,7 @@ export default function GoalsPage() {
   }, [goals]);
   
   const handleDelete = (id: string, name: string) => {
-    hapticFeedback?.('warning');
+    hapticFeedback?.('notification', 'warning')
     deleteGoal(id);
     addToast({ type: 'info', message: `${language === 'ru' ? 'Удалено:' : 'Deleted:'} ${name}` });
   };

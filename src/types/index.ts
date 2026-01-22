@@ -436,6 +436,8 @@ export interface TelegramWebApp {
   setBackgroundColor: (color: string) => void;
   enableClosingConfirmation: () => void;
   disableClosingConfirmation: () => void;
+  requestFullscreen?: () => void;
+  exitFullscreen?: () => void;
 }
 
 declare global {

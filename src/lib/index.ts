@@ -3,11 +3,17 @@
 // LIFELEDGER - УТИЛИТЫ, КОНСТАНТЫ, ХЕЛПЕРЫ
 // ============================================================================
 
-import { TransactionType, Category, EnabledModule } from '@/types';
+import { TransactionType, EnabledModule } from '@/types';
 
 // ============================================================================
 // ЦВЕТОВАЯ СИСТЕМА
 // ============================================================================
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+}
 
 export const colors = {
   gold: {

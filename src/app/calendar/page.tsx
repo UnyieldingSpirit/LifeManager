@@ -49,7 +49,7 @@ export default function CalendarPage() {
     return events.filter(e => { const diff = Math.ceil((parseISO(e.date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)); return diff >= 0 && diff <= 7; }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5);
   }, [events]);
   
-  const handleDeleteEvent = (id: string) => { hapticFeedback?.('warning'); deleteEvent(id); addToast({ type: 'info', message: language === 'ru' ? 'Событие удалено' : 'Event deleted' }); };
+  const handleDeleteEvent = (id: string) => { hapticFeedback?.('notification', 'warning'); deleteEvent(id); addToast({ type: 'info', message: language === 'ru' ? 'Событие удалено' : 'Event deleted' }); };
   const weekDays = language === 'ru' ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
