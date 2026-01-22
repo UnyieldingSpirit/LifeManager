@@ -7,6 +7,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserStore, OnboardingFormData } from '@/store/userStore';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Locale } from '@/types';
+import {
+  CalendarDaysIcon,
+  ChartBarIcon,
+  BellAlertIcon,
+  BellSlashIcon,
+} from '@heroicons/react/24/outline';
 
 // ============================================================================
 // ЦВЕТОВАЯ СИСТЕМА
@@ -19,9 +25,9 @@ const colors = {
     dark: '#A68B4B',
     subtle: 'rgba(201, 169, 98, 0.15)',
     muted: 'rgba(201, 169, 98, 0.10)',
-    glow: 'rgba(201, 169, 98, 0.25)',
+    glow: 'rgba(201, 169, 98, 0.2)',
     border: 'rgba(201, 169, 98, 0.40)',
-    borderLight: 'rgba(201, 169, 98, 0.25)',
+    borderLight: 'rgba(201, 169, 98, 0.2)',
   },
   bg: {
     primary: '#0A0A0A',
@@ -76,6 +82,41 @@ const gradients = {
   gold: `linear-gradient(135deg, ${colors.gold.primary} 0%, ${colors.gold.light} 50%, ${colors.gold.primary} 100%)`,
   goldSubtle: `linear-gradient(135deg, ${colors.gold.subtle} 0%, ${colors.gold.muted} 100%)`,
   shimmer: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)`,
+};
+
+// Glass-стили для элементов на фото - БОЛЕЕ ПРОЗРАЧНЫЕ
+const glassStyles = {
+  // Карточка/кнопка по умолчанию
+  card: {
+    background: 'rgba(0, 0, 0, 0.35)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+  },
+  // Карточка/кнопка выбранная
+  cardSelected: {
+    background: 'rgba(201, 169, 98, 0.2)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: `1px solid ${colors.gold.border}`,
+    boxShadow: `0 0 15px ${colors.gold.primary}25`,
+  },
+  // Инпут
+  input: {
+    background: 'rgba(0, 0, 0, 0.35)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  // Инпут с фокусом/значением
+  inputActive: {
+    background: 'rgba(0, 0, 0, 0.25)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: `1px solid ${colors.gold.border}`,
+    boxShadow: `0 0 12px ${colors.gold.primary}15`,
+  },
 };
 
 // ============================================================================
@@ -137,14 +178,63 @@ interface LanguageOption {
 // ДАННЫЕ
 // ============================================================================
 
+// Маппинг фоновых изображений для каждого шага
+const stepBackgrounds: Record<OnboardingStep, string> = {
+  'intro': '/onboarding-welcome.jpg', // Меняется динамически для intro слайдов
+  'registration': '/onboarding-profile.jpg',
+  'language': '/onboarding-language.jpg',
+  'theme': '/onboarding-theme.jpg',
+  'currency': '/onboarding-currency.jpg',
+  'budget': '/onboarding-budget.jpg',
+  'salary-day': '/onboarding-payday.jpg',
+  'expense-categories': '/onboarding-expenses.jpg',
+  'income-categories': '/onboarding-income.jpg',
+  'goals': '/onboarding-goals.jpg',
+  'lifestyle': '/onboarding-lifestyle.jpg',
+  'notifications': '/onboarding-notifications.jpg',
+  'complete': '/onboarding-complete.jpg',
+};
+
+// Прозрачность overlay для каждого шага (чем меньше - тем виднее фото)
+// light = фото хорошо видно, medium = баланс, heavy = больше затемнения для читаемости
+type OverlayIntensity = 'light' | 'medium' | 'heavy';
+
+const stepOverlayIntensity: Record<OnboardingStep, OverlayIntensity> = {
+  'intro': 'light',           // Красивая геометрия - показываем
+  'registration': 'medium',   // Силуэт человека - баланс
+  'language': 'light',        // Глобус - показываем
+  'theme': 'light',           // Light/dark разделение - показываем
+  'currency': 'light',        // Валюты на орбитах - показываем
+  'budget': 'medium',         // Много контента - баланс
+  'salary-day': 'heavy',      // Много кнопок (31 день) - затемняем
+  'expense-categories': 'heavy', // Много мелких элементов - затемняем
+  'income-categories': 'heavy',  // Много мелких элементов - затемняем
+  'goals': 'light',           // Путь к цели - показываем
+  'lifestyle': 'light',       // Уютный дом - показываем
+  'notifications': 'medium',  // Баланс
+  'complete': 'light',        // ПРАЗДНИК! Максимально показываем
+};
+
+const getOverlayGradient = (intensity: OverlayIntensity) => {
+  switch (intensity) {
+    case 'light':
+      return 'linear-gradient(to bottom, rgba(10,10,10,0.1) 0%, rgba(10,10,10,0.25) 50%, rgba(10,10,10,0.5) 100%)';
+    case 'medium':
+      return 'linear-gradient(to bottom, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.65) 100%)';
+    case 'heavy':
+      return 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.75) 100%)';
+  }
+};
+
 const introSlides = [
   {
     id: 1,
     title: 'LifeLedger',
     subtitle: 'Ваш персональный ассистент',
     description: 'Умное приложение для управления финансами и повседневными задачами',
+    background: '/onboarding-welcome.jpg',
     icon: (
-      <svg className="w-20 h-20" viewBox="0 0 24 24" fill="none">
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none">
         <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -157,8 +247,9 @@ const introSlides = [
     title: 'Контроль финансов',
     subtitle: 'Знайте куда уходят деньги',
     description: 'Отслеживайте доходы и расходы, анализируйте траты и планируйте бюджет',
+    background: '/onboarding-finance.jpg',
     icon: (
-      <svg className="w-20 h-20" viewBox="0 0 24 24" fill="none">
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none">
         <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
@@ -169,8 +260,9 @@ const introSlides = [
     title: 'Умные напоминания',
     subtitle: 'Никогда не забывайте важное',
     description: 'Напомним о счетах, платежах, встречах и любых задачах вовремя',
+    background: '/onboarding-reminders.jpg',
     icon: (
-      <svg className="w-20 h-20" viewBox="0 0 24 24" fill="none">
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none">
         <path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
@@ -182,8 +274,9 @@ const introSlides = [
     title: 'Аналитика и цели',
     subtitle: 'Достигайте финансовых целей',
     description: 'Визуализация трат, прогнозы и персональные рекомендации для достижения целей',
+    background: '/onboarding-analytics.jpg',
     icon: (
-      <svg className="w-20 h-20" viewBox="0 0 24 24" fill="none">
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none">
         <path d="M21 21H4.6c-.56 0-.84 0-1.054-.109a1 1 0 01-.437-.437C3 20.24 3 19.96 3 19.4V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         <path d="M7 14l4-4 4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M17 8h4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -302,10 +395,10 @@ const lifestyleOptions: LifestyleOption[] = [
 ];
 
 const notificationOptions = [
-  { id: 'daily', name: 'Ежедневно', description: 'Напоминания каждый день', icon: '📆' },
-  { id: 'weekly', name: 'Раз в неделю', description: 'Еженедельный отчёт', icon: '📊' },
-  { id: 'important', name: 'Только важное', description: 'Платежи и дедлайны', icon: '🔔' },
-  { id: 'off', name: 'Отключить', description: 'Без напоминаний', icon: '🔕' },
+  { id: 'daily', name: 'Ежедневно', description: 'Напоминания каждый день', icon: <CalendarDaysIcon className="w-6 h-6" /> },
+  { id: 'weekly', name: 'Раз в неделю', description: 'Еженедельный отчёт', icon: <ChartBarIcon className="w-6 h-6" /> },
+  { id: 'important', name: 'Только важное', description: 'Платежи и дедлайны', icon: <BellAlertIcon className="w-6 h-6" /> },
+  { id: 'off', name: 'Отключить', description: 'Без напоминаний', icon: <BellSlashIcon className="w-6 h-6" /> },
 ];
 
 const budgetPresets = [
@@ -462,7 +555,25 @@ export default function OnboardingPage() {
     
     return (
       <div className="page-scrollable" style={{ background: colors.bg.primary }}>
-        <div className="min-h-full flex flex-col px-6 pb-28">
+        {/* Background Image - FIXED */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500"
+          style={{ 
+            backgroundImage: `url(${currentSlide.background})`,
+            zIndex: 0,
+          }}
+        />
+        
+        {/* Gradient overlay - light для intro */}
+        <div 
+          className="fixed inset-0"
+          style={{ 
+            background: getOverlayGradient('light'),
+            zIndex: 1,
+          }}
+        />
+        
+        <div className="relative min-h-full flex flex-col px-4 pb-24" style={{ zIndex: 2 }}>
           {/* Content */}
           <div className="flex-1 flex flex-col items-center justify-center">
             <AnimatePresence mode="wait" custom={direction}>
@@ -474,25 +585,32 @@ export default function OnboardingPage() {
                 animate="center"
                 exit="exit"
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center text-center p-4 rounded-2xl"
+                style={{
+                  background: 'rgba(10, 10, 10, 0.4)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}
               >
                 {/* Icon */}
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="relative mb-8"
+                  className="relative mb-4"
                 >
                   <div 
                     className="absolute inset-0 rounded-full blur-3xl"
-                    style={{ background: `${currentSlide.accent}20`, transform: 'scale(2)' }}
+                    style={{ background: `${currentSlide.accent}30`, transform: 'scale(2)' }}
                   />
                   <div 
-                    className="relative w-32 h-32 rounded-3xl flex items-center justify-center"
+                    className="relative w-20 h-20 rounded-2xl flex items-center justify-center"
                     style={{ 
-                      background: `linear-gradient(135deg, ${currentSlide.accent}15 0%, ${currentSlide.accent}05 100%)`,
-                      border: `1px solid ${currentSlide.accent}30`,
+                      background: `rgba(${currentSlide.accent === colors.gold.primary ? '201, 169, 98' : currentSlide.accent === colors.success.primary ? '74, 222, 128' : currentSlide.accent === colors.categories.blue ? '96, 165, 250' : '236, 72, 153'}, 0.2)`,
+                      border: `1px solid ${currentSlide.accent}50`,
                       color: currentSlide.accent,
+                      boxShadow: `0 0 30px ${currentSlide.accent}30`,
                     }}
                   >
                     {currentSlide.icon}
@@ -504,12 +622,13 @@ export default function OnboardingPage() {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-3xl font-bold mb-2"
+                  className="text-2xl font-bold mb-1"
                   style={{ 
                     background: introSlide === 0 ? gradients.gold : undefined,
                     WebkitBackgroundClip: introSlide === 0 ? 'text' : undefined,
                     WebkitTextFillColor: introSlide === 0 ? 'transparent' : undefined,
                     color: introSlide === 0 ? undefined : colors.text.primary,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                   }}
                 >
                   {currentSlide.title}
@@ -519,8 +638,11 @@ export default function OnboardingPage() {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.25 }}
-                  className="text-base font-medium mb-2"
-                  style={{ color: currentSlide.accent }}
+                  className="text-sm font-medium mb-1"
+                  style={{ 
+                    color: currentSlide.accent,
+                    textShadow: `0 0 15px ${currentSlide.accent}40`,
+                  }}
                 >
                   {currentSlide.subtitle}
                 </motion.p>
@@ -529,7 +651,7 @@ export default function OnboardingPage() {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-sm leading-relaxed max-w-xs"
+                  className="text-xs leading-relaxed max-w-xs"
                   style={{ color: colors.text.secondary }}
                 >
                   {currentSlide.description}
@@ -538,8 +660,15 @@ export default function OnboardingPage() {
             </AnimatePresence>
           </div>
 
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mb-4">
+          {/* Dots - компактные */}
+          <div 
+            className="flex justify-center gap-2 mb-3 py-2 px-4 rounded-full mx-auto"
+            style={{
+              background: 'rgba(10, 10, 10, 0.3)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+          >
             {introSlides.map((_, index) => (
               <button
                 key={index}
@@ -550,28 +679,33 @@ export default function OnboardingPage() {
                 }}
                 className="transition-all duration-300"
                 style={{
-                  width: index === introSlide ? 24 : 8,
-                  height: 8,
-                  borderRadius: 4,
-                  background: index === introSlide ? currentSlide.accent : colors.surface.border,
+                  width: index === introSlide ? 20 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  background: index === introSlide ? currentSlide.accent : 'rgba(255, 255, 255, 0.3)',
+                  boxShadow: index === introSlide ? `0 0 8px ${currentSlide.accent}` : 'none',
                 }}
               />
             ))}
           </div>
         </div>
 
-        {/* Fixed Button */}
+        {/* Fixed Button - компактный */}
         <div 
-          className="fixed bottom-0 left-0 right-0 px-6 pb-6 pt-4"
-          style={{ background: `linear-gradient(to top, ${colors.bg.primary} 80%, transparent)` }}
+          className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
+          style={{ 
+            background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0.5) 60%, transparent 100%)',
+            zIndex: 10,
+          }}
         >
           <motion.button
             onClick={handleIntroNext}
-            className="w-full h-14 rounded-2xl font-semibold text-base"
+            className="w-full h-12 rounded-xl font-semibold text-base"
             style={{ 
-              background: introSlide === introSlides.length - 1 ? gradients.gold : colors.surface.default,
-              border: introSlide === introSlides.length - 1 ? 'none' : `1px solid ${colors.surface.border}`,
+              background: introSlide === introSlides.length - 1 ? gradients.gold : 'rgba(255, 255, 255, 0.1)',
+              border: introSlide === introSlides.length - 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
               color: introSlide === introSlides.length - 1 ? colors.bg.primary : colors.text.primary,
+              boxShadow: introSlide === introSlides.length - 1 ? '0 4px 15px rgba(201, 169, 98, 0.35)' : 'none',
             }}
             whileTap={{ scale: 0.98 }}
           >
@@ -591,10 +725,18 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextDisabled={!formData.name.trim()}
       progress={progress}
+      backgroundImage={stepBackgrounds['registration']}
+      overlayIntensity={stepOverlayIntensity['registration']}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
+          <label 
+            className="block text-sm font-medium mb-2" 
+            style={{ 
+              color: colors.text.primary,
+              textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+          >
             Ваше имя *
           </label>
           <input
@@ -602,17 +744,23 @@ export default function OnboardingPage() {
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="Введите имя"
-            className="w-full h-14 px-4 rounded-xl text-base outline-none transition-all"
+            className="w-full h-12 px-4 rounded-xl text-base outline-none transition-all"
             style={{
-              background: colors.surface.default,
-              border: formData.name ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.border}`,
+
+              ...(formData.name ? glassStyles.inputActive : glassStyles.input),
               color: colors.text.primary,
             }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
+          <label 
+            className="block text-sm font-medium mb-2" 
+            style={{ 
+              color: colors.text.primary,
+              textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+          >
             Номер телефона <span style={{ color: colors.text.tertiary }}>(необязательно)</span>
           </label>
           <input
@@ -620,27 +768,33 @@ export default function OnboardingPage() {
             value={formData.phone}
             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
             placeholder="+998 90 123 45 67"
-            className="w-full h-14 px-4 rounded-xl text-base outline-none transition-all"
+            className="w-full h-12 px-4 rounded-xl text-base outline-none transition-all"
             style={{
-              background: colors.surface.default,
-              border: `1px solid ${colors.surface.border}`,
+
+              ...(formData.phone ? glassStyles.inputActive : glassStyles.input),
               color: colors.text.primary,
             }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
+          <label 
+            className="block text-sm font-medium mb-2" 
+            style={{ 
+              color: colors.text.primary,
+              textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+          >
             Дата рождения <span style={{ color: colors.text.tertiary }}>(для напоминаний)</span>
           </label>
           <input
             type="date"
             value={formData.birthday}
             onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
-            className="w-full h-14 px-4 rounded-xl text-base outline-none transition-all"
+            className="w-full h-12 px-4 rounded-xl text-base outline-none transition-all"
             style={{
-              background: colors.surface.default,
-              border: `1px solid ${colors.surface.border}`,
+
+              ...(formData.birthday ? glassStyles.inputActive : glassStyles.input),
               color: colors.text.primary,
               colorScheme: 'dark',
             }}
@@ -649,7 +803,11 @@ export default function OnboardingPage() {
 
         <div 
           className="flex items-start gap-3 p-4 rounded-xl"
-          style={{ background: colors.gold.muted, border: `1px solid ${colors.gold.borderLight}` }}
+          style={{ 
+            ...glassStyles.card,
+            background: 'rgba(201, 169, 98, 0.15)',
+            border: `1px solid ${colors.gold.borderLight}`,
+          }}
         >
           <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" style={{ color: colors.gold.primary }}>
             <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -670,8 +828,10 @@ export default function OnboardingPage() {
       onBack={goBack}
       onNext={goNext}
       progress={progress}
+      backgroundImage={stepBackgrounds['language']}
+      overlayIntensity={stepOverlayIntensity['language']}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {languages.map((lang) => {
           const isSelected = formData.language === lang.id;
           return (
@@ -681,14 +841,24 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, language: lang.id }));
                 hapticFeedback?.('selection');
               }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
               style={{
-                background: isSelected ? colors.gold.subtle : colors.surface.default,
-                border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected 
+                  ? 'rgba(201, 169, 98, 0.2)' 
+                  : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isSelected 
+                  ? `1px solid ${colors.gold.border}` 
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected 
+                  ? `0 0 20px ${colors.gold.primary}30` 
+                  : '0 4px 12px rgba(0, 0, 0, 0.3)',
               }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="text-3xl">{lang.flag}</span>
+              <span className="text-2xl">{lang.flag}</span>
               <div className="flex-1 text-left">
                 <p className="font-medium" style={{ color: colors.text.primary }}>{lang.native}</p>
                 <p className="text-sm" style={{ color: colors.text.tertiary }}>{lang.name}</p>
@@ -696,7 +866,8 @@ export default function OnboardingPage() {
               <div 
                 className="w-6 h-6 rounded-full"
                 style={{
-                  border: isSelected ? `6px solid ${colors.gold.primary}` : `2px solid ${colors.surface.border}`,
+
+                  border: isSelected ? `6px solid ${colors.gold.primary}` : '2px solid rgba(255, 255, 255, 0.3)',
                   background: 'transparent',
                 }}
               />
@@ -715,8 +886,10 @@ export default function OnboardingPage() {
       onBack={goBack}
       onNext={goNext}
       progress={progress}
+      backgroundImage={stepBackgrounds['theme']}
+      overlayIntensity={stepOverlayIntensity['theme']}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {themes.map((theme) => {
           const isSelected = formData.theme === theme.id;
           return (
@@ -726,15 +899,24 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, theme: theme.id }));
                 hapticFeedback?.('selection');
               }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
               style={{
-                background: isSelected ? colors.gold.subtle : colors.surface.default,
-                border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+                background: isSelected 
+                  ? 'rgba(201, 169, 98, 0.2)' 
+                  : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isSelected 
+                  ? `1px solid ${colors.gold.border}` 
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected 
+                  ? `0 0 20px ${colors.gold.primary}30` 
+                  : '0 4px 12px rgba(0, 0, 0, 0.3)',
               }}
               whileTap={{ scale: 0.98 }}
             >
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
                 style={{ 
                   background: isSelected ? colors.gold.primary : colors.gold.subtle,
                   color: isSelected ? colors.bg.primary : colors.gold.primary,
@@ -749,7 +931,8 @@ export default function OnboardingPage() {
               <div 
                 className="w-6 h-6 rounded-full"
                 style={{
-                  border: isSelected ? `6px solid ${colors.gold.primary}` : `2px solid ${colors.surface.border}`,
+
+                  border: isSelected ? `6px solid ${colors.gold.primary}` : '2px solid rgba(255, 255, 255, 0.3)',
                   background: 'transparent',
                 }}
               />
@@ -768,8 +951,10 @@ export default function OnboardingPage() {
       onBack={goBack}
       onNext={goNext}
       progress={progress}
+      backgroundImage={stepBackgrounds['currency']}
+      overlayIntensity={stepOverlayIntensity['currency']}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="relative">
           <svg 
             className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" 
@@ -786,8 +971,7 @@ export default function OnboardingPage() {
             placeholder="Поиск валюты..."
             className="w-full h-12 pl-12 pr-4 rounded-xl text-sm outline-none"
             style={{
-              background: colors.surface.default,
-              border: `1px solid ${colors.surface.border}`,
+              ...glassStyles.input,
               color: colors.text.primary,
             }}
           />
@@ -803,14 +987,18 @@ export default function OnboardingPage() {
                   setFormData(prev => ({ ...prev, currency: currency.code }));
                   hapticFeedback?.('selection');
                 }}
-                className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
                 style={{
-                  background: isSelected ? colors.gold.subtle : colors.surface.default,
-                  border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+
+                  background: isSelected ? 'rgba(201, 169, 98, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                  border: isSelected ? `1px solid ${colors.gold.border}` : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected ? `0 0 20px ${colors.gold.primary}30` : '0 4px 12px rgba(0, 0, 0, 0.3)',
                 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span className="text-2xl">{currency.flag}</span>
+                <span className="text-xl">{currency.flag}</span>
                 <div className="flex-1 text-left">
                   <p className="font-medium" style={{ color: colors.text.primary }}>{currency.name}</p>
                   <p className="text-sm" style={{ color: colors.text.tertiary }}>{currency.code} • {currency.symbol}</p>
@@ -818,7 +1006,8 @@ export default function OnboardingPage() {
                 <div 
                   className="w-6 h-6 rounded-full flex items-center justify-center"
                   style={{
-                    border: isSelected ? 'none' : `2px solid ${colors.surface.border}`,
+
+                    border: isSelected ? 'none' : '2px solid rgba(255, 255, 255, 0.2)',
                     background: isSelected ? colors.gold.primary : 'transparent',
                   }}
                 >
@@ -844,6 +1033,8 @@ export default function OnboardingPage() {
       onBack={goBack}
       onNext={goNext}
       progress={progress}
+      backgroundImage={stepBackgrounds['budget']}
+      overlayIntensity={stepOverlayIntensity['budget']}
     >
       <div className="space-y-6">
         <div>
@@ -861,10 +1052,13 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, initialBalance: parseInt(value) || 0 }));
               }}
               placeholder="0"
-              className="w-full h-14 px-4 pr-16 rounded-xl text-xl font-semibold outline-none transition-all"
+              className="w-full h-12 px-4 pr-16 rounded-xl text-xl font-semibold outline-none transition-all"
               style={{
-                background: colors.surface.default,
-                border: formData.initialBalance > 0 ? `1px solid ${colors.success.border}` : `1px solid ${colors.surface.border}`,
+                ...(formData.initialBalance > 0 ? {
+                  ...glassStyles.input,
+                  border: `1px solid ${colors.success.border}`,
+                  boxShadow: `0 0 15px ${colors.success.primary}20`,
+                } : glassStyles.input),
                 color: colors.text.primary,
               }}
             />
@@ -889,10 +1083,9 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, monthlyBudget: parseInt(value) || 0 }));
               }}
               placeholder="0"
-              className="w-full h-14 px-4 pr-16 rounded-xl text-xl font-semibold outline-none transition-all"
+              className="w-full h-12 px-4 pr-16 rounded-xl text-xl font-semibold outline-none transition-all"
               style={{
-                background: colors.surface.default,
-                border: formData.monthlyBudget > 0 ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.border}`,
+                ...(formData.monthlyBudget > 0 ? glassStyles.inputActive : glassStyles.input),
                 color: colors.text.primary,
               }}
             />
@@ -913,11 +1106,13 @@ export default function OnboardingPage() {
                 className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
                 style={{
                   background: formData.monthlyBudget === preset.amount 
-                    ? colors.gold.subtle 
-                    : colors.surface.default,
+                    ? 'rgba(201, 169, 98, 0.3)' 
+                    : 'rgba(0, 0, 0, 0.25)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
                   border: formData.monthlyBudget === preset.amount 
                     ? `1px solid ${colors.gold.border}` 
-                    : `1px solid ${colors.surface.border}`,
+                    : '1px solid rgba(255, 255, 255, 0.1)',
                   color: formData.monthlyBudget === preset.amount ? colors.gold.primary : colors.text.secondary,
                 }}
               >
@@ -938,9 +1133,11 @@ export default function OnboardingPage() {
       onBack={goBack}
       onNext={goNext}
       progress={progress}
+      backgroundImage={stepBackgrounds['salary-day']}
+      overlayIntensity={stepOverlayIntensity['salary-day']}
     >
-      <div className="space-y-4">
-        <div className="grid grid-cols-7 gap-2">
+      <div className="space-y-3">
+        <div className="grid grid-cols-7 gap-1.5">
           {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
             const isSelected = formData.salaryDay === day;
             return (
@@ -952,8 +1149,12 @@ export default function OnboardingPage() {
                 }}
                 className="aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all"
                 style={{
-                  background: isSelected ? colors.gold.primary : colors.surface.default,
-                  border: isSelected ? 'none' : `1px solid ${colors.surface.borderLight}`,
+
+                  background: isSelected ? colors.gold.primary : 'rgba(0, 0, 0, 0.3)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: isSelected ? `0 0 15px ${colors.gold.primary}40` : '0 2px 8px rgba(0, 0, 0, 0.2)',
                   color: isSelected ? colors.bg.primary : colors.text.secondary,
                 }}
                 whileTap={{ scale: 0.9 }}
@@ -986,27 +1187,33 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextDisabled={formData.expenseCategories.length === 0}
       progress={progress}
+      backgroundImage={stepBackgrounds['expense-categories']}
+      overlayIntensity={stepOverlayIntensity['expense-categories']}
     >
       <p className="text-xs mb-4" style={{ color: colors.text.tertiary }}>
         Выбрано: {formData.expenseCategories.length} из {expenseCategories.length}
       </p>
       
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {expenseCategories.map((category) => {
           const isSelected = formData.expenseCategories.includes(category.id);
           return (
             <motion.button
               key={category.id}
               onClick={() => toggleCategory(category.id, 'expense')}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all"
+              className="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all"
               style={{
-                background: isSelected ? `${category.color}15` : colors.surface.default,
-                border: isSelected ? `1px solid ${category.color}40` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected ? `${category.color}25` : 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: isSelected ? `1px solid ${category.color}60` : '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: isSelected ? `0 0 15px ${category.color}30` : '0 2px 8px rgba(0, 0, 0, 0.2)',
               }}
               whileTap={{ scale: 0.95 }}
             >
               <div 
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
                 style={{ 
                   background: isSelected ? category.color : `${category.color}20`,
                   color: isSelected ? '#fff' : category.color,
@@ -1038,27 +1245,33 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextDisabled={formData.incomeCategories.length === 0}
       progress={progress}
+      backgroundImage={stepBackgrounds['income-categories']}
+      overlayIntensity={stepOverlayIntensity['income-categories']}
     >
       <p className="text-xs mb-4" style={{ color: colors.text.tertiary }}>
         Выбрано: {formData.incomeCategories.length} из {incomeCategories.length}
       </p>
       
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {incomeCategories.map((category) => {
           const isSelected = formData.incomeCategories.includes(category.id);
           return (
             <motion.button
               key={category.id}
               onClick={() => toggleCategory(category.id, 'income')}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all"
+              className="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all"
               style={{
-                background: isSelected ? `${category.color}15` : colors.surface.default,
-                border: isSelected ? `1px solid ${category.color}40` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected ? `${category.color}25` : 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: isSelected ? `1px solid ${category.color}60` : '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: isSelected ? `0 0 15px ${category.color}30` : '0 2px 8px rgba(0, 0, 0, 0.2)',
               }}
               whileTap={{ scale: 0.95 }}
             >
               <div 
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
                 style={{ 
                   background: isSelected ? category.color : `${category.color}20`,
                   color: isSelected ? '#fff' : category.color,
@@ -1090,23 +1303,29 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextDisabled={formData.goals.length === 0}
       progress={progress}
+      backgroundImage={stepBackgrounds['goals']}
+      overlayIntensity={stepOverlayIntensity['goals']}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {goals.map((goal) => {
           const isSelected = formData.goals.includes(goal.id);
           return (
             <motion.button
               key={goal.id}
               onClick={() => toggleGoal(goal.id)}
-              className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
               style={{
-                background: isSelected ? colors.gold.subtle : colors.surface.default,
-                border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected ? 'rgba(201, 169, 98, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isSelected ? `1px solid ${colors.gold.border}` : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected ? `0 0 20px ${colors.gold.primary}30` : '0 4px 12px rgba(0, 0, 0, 0.3)',
               }}
               whileTap={{ scale: 0.98 }}
             >
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
                 style={{ 
                   background: isSelected ? colors.gold.primary : colors.gold.subtle,
                   color: isSelected ? colors.bg.primary : colors.gold.primary,
@@ -1123,7 +1342,8 @@ export default function OnboardingPage() {
               <div 
                 className="w-6 h-6 rounded-full flex items-center justify-center"
                 style={{
-                  border: isSelected ? 'none' : `2px solid ${colors.surface.border}`,
+
+                  border: isSelected ? 'none' : '2px solid rgba(255, 255, 255, 0.2)',
                   background: isSelected ? colors.gold.primary : 'transparent',
                 }}
               >
@@ -1149,8 +1369,10 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextDisabled={!formData.lifestyle}
       progress={progress}
+      backgroundImage={stepBackgrounds['lifestyle']}
+      overlayIntensity={stepOverlayIntensity['lifestyle']}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {lifestyleOptions.map((option) => {
           const isSelected = formData.lifestyle === option.id;
           return (
@@ -1160,15 +1382,19 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, lifestyle: option.id as OnboardingFormData['lifestyle'] }));
                 hapticFeedback?.('selection');
               }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
               style={{
-                background: isSelected ? colors.gold.subtle : colors.surface.default,
-                border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected ? 'rgba(201, 169, 98, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isSelected ? `1px solid ${colors.gold.border}` : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected ? `0 0 20px ${colors.gold.primary}30` : '0 4px 12px rgba(0, 0, 0, 0.3)',
               }}
               whileTap={{ scale: 0.98 }}
             >
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
                 style={{ 
                   background: isSelected ? colors.gold.primary : colors.gold.subtle,
                   color: isSelected ? colors.bg.primary : colors.gold.primary,
@@ -1184,7 +1410,8 @@ export default function OnboardingPage() {
               <div 
                 className="w-6 h-6 rounded-full"
                 style={{
-                  border: isSelected ? `6px solid ${colors.gold.primary}` : `2px solid ${colors.surface.border}`,
+
+                  border: isSelected ? `6px solid ${colors.gold.primary}` : '2px solid rgba(255, 255, 255, 0.3)',
                   background: 'transparent',
                 }}
               />
@@ -1204,8 +1431,10 @@ export default function OnboardingPage() {
       onNext={goNext}
       nextLabel="Завершить"
       progress={progress}
+      backgroundImage={stepBackgrounds['notifications']}
+      overlayIntensity={stepOverlayIntensity['notifications']}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         {notificationOptions.map((option) => {
           const isSelected = formData.notifications === option.id;
           return (
@@ -1215,14 +1444,26 @@ export default function OnboardingPage() {
                 setFormData(prev => ({ ...prev, notifications: option.id as OnboardingFormData['notifications'] }));
                 hapticFeedback?.('selection');
               }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all"
               style={{
-                background: isSelected ? colors.gold.subtle : colors.surface.default,
-                border: isSelected ? `1px solid ${colors.gold.border}` : `1px solid ${colors.surface.borderLight}`,
+
+                background: isSelected ? 'rgba(201, 169, 98, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isSelected ? `1px solid ${colors.gold.border}` : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected ? `0 0 20px ${colors.gold.primary}30` : '0 4px 12px rgba(0, 0, 0, 0.3)',
               }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="text-2xl">{option.icon}</span>
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ 
+                  background: isSelected ? colors.gold.primary : 'rgba(255, 255, 255, 0.1)',
+                  color: isSelected ? colors.bg.primary : colors.gold.primary,
+                }}
+              >
+                {option.icon}
+              </div>
               <div className="flex-1 text-left">
                 <p className="font-medium" style={{ color: colors.text.primary }}>{option.name}</p>
                 <p className="text-sm" style={{ color: colors.text.tertiary }}>{option.description}</p>
@@ -1230,7 +1471,8 @@ export default function OnboardingPage() {
               <div 
                 className="w-6 h-6 rounded-full"
                 style={{
-                  border: isSelected ? `6px solid ${colors.gold.primary}` : `2px solid ${colors.surface.border}`,
+
+                  border: isSelected ? `6px solid ${colors.gold.primary}` : '2px solid rgba(255, 255, 255, 0.3)',
                   background: 'transparent',
                 }}
               />
@@ -1247,123 +1489,153 @@ export default function OnboardingPage() {
     
     return (
       <div className="page-scrollable" style={{ background: colors.bg.primary }}>
-        <div className="min-h-full flex flex-col items-center justify-center px-6 pb-28 text-center">
+        {/* Background Image - FIXED */}
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: `url(${stepBackgrounds['complete']})`,
+            zIndex: 0,
+          }}
+        />
+        
+        {/* Gradient overlay - LIGHT для празднования! */}
+        <div 
+          className="fixed inset-0"
+          style={{ 
+            background: getOverlayGradient('light'),
+            zIndex: 1,
+          }}
+        />
+        
+        <div className="relative min-h-full flex flex-col items-center justify-center px-4 pb-24 text-center" style={{ zIndex: 2 }}>
+          {/* Glass card container - компактный */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-            className="relative mb-8"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            className="p-5 rounded-2xl w-full max-w-sm"
+            style={{
+              background: 'rgba(10, 10, 10, 0.4)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+            }}
           >
-            <div 
-              className="absolute inset-0 rounded-full blur-3xl"
-              style={{ background: colors.success.subtle, transform: 'scale(2.5)' }}
-            />
-            <div 
-              className="relative w-24 h-24 rounded-full flex items-center justify-center"
-              style={{ background: colors.success.primary }}
+            {/* Success icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+              className="relative mb-4 mx-auto w-fit"
             >
-              <motion.svg 
-                className="w-12 h-12" 
-                viewBox="0 0 24 24" 
-                fill="none"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+              <div 
+                className="absolute inset-0 rounded-full blur-2xl"
+                style={{ background: colors.success.subtle, transform: 'scale(2)' }}
+              />
+              <div 
+                className="relative w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ 
+                  background: colors.success.primary,
+                  boxShadow: `0 0 25px ${colors.success.primary}50`,
+                }}
               >
-                <motion.path 
-                  d="M5 13l4 4L19 7" 
-                  stroke={colors.bg.primary}
-                  strokeWidth="3" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
+                <motion.svg 
+                  className="w-8 h-8" 
+                  viewBox="0 0 24 24" 
+                  fill="none"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                />
-              </motion.svg>
-            </div>
-          </motion.div>
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                  <motion.path 
+                    d="M5 13l4 4L19 7" 
+                    stroke={colors.bg.primary}
+                    strokeWidth="3" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                  />
+                </motion.svg>
+              </div>
+            </motion.div>
 
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-2xl font-bold mb-2"
-            style={{ color: colors.text.primary }}
-          >
-            Всё готово!
-          </motion.h1>
-          
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-base mb-8"
-            style={{ color: colors.text.secondary }}
-          >
-            {formData.name ? `${formData.name}, д` : 'Д'}обро пожаловать в LifeLedger
-          </motion.p>
+            <motion.h1
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-xl font-bold mb-1"
+              style={{ 
+                color: colors.text.primary,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}
+            >
+              Всё готово!
+            </motion.h1>
+            
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-sm mb-4"
+              style={{ color: colors.text.secondary }}
+            >
+              {formData.name ? `${formData.name}, д` : 'Д'}обро пожаловать в LifeLedger
+            </motion.p>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="w-full p-4 rounded-xl"
-            style={{ background: colors.surface.default, border: `1px solid ${colors.surface.borderLight}` }}
-          >
-            <div className="grid grid-cols-2 gap-4 text-left">
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Валюта</p>
-                <p className="font-medium" style={{ color: colors.text.primary }}>
-                  {selectedCurrency?.flag} {formData.currency}
-                </p>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="p-3 rounded-xl"
+              style={{ 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div className="grid grid-cols-3 gap-3 text-left">
+                <div>
+                  <p className="text-[10px]" style={{ color: colors.text.tertiary }}>Валюта</p>
+                  <p className="text-sm font-medium" style={{ color: colors.text.primary }}>
+                    {selectedCurrency?.flag} {formData.currency}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px]" style={{ color: colors.text.tertiary }}>Баланс</p>
+                  <p className="text-sm font-medium" style={{ color: colors.success.primary }}>
+                    {formatNumber(formData.initialBalance)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px]" style={{ color: colors.text.tertiary }}>Бюджет</p>
+                  <p className="text-sm font-medium" style={{ color: colors.gold.primary }}>
+                    {formatNumber(formData.monthlyBudget)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Язык</p>
-                <p className="font-medium" style={{ color: colors.text.primary }}>
-                  {languages.find(l => l.id === formData.language)?.flag} {languages.find(l => l.id === formData.language)?.native}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Баланс</p>
-                <p className="font-medium" style={{ color: colors.success.primary }}>
-                  {formatNumber(formData.initialBalance)} {selectedCurrency?.symbol}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Бюджет</p>
-                <p className="font-medium" style={{ color: colors.gold.primary }}>
-                  {formatNumber(formData.monthlyBudget)} {selectedCurrency?.symbol}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Категорий</p>
-                <p className="font-medium" style={{ color: colors.text.primary }}>
-                  {formData.expenseCategories.length + formData.incomeCategories.length}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: colors.text.tertiary }}>Целей</p>
-                <p className="font-medium" style={{ color: colors.text.primary }}>{formData.goals.length}</p>
-              </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
 
-        {/* Fixed Button */}
+        {/* Fixed Button - компактный */}
         <div 
-          className="fixed bottom-0 left-0 right-0 px-6 pb-6 pt-4"
-          style={{ background: `linear-gradient(to top, ${colors.bg.primary} 80%, transparent)` }}
+          className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
+          style={{ 
+            background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0.5) 60%, transparent 100%)',
+            zIndex: 10,
+          }}
         >
           <motion.button
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7 }}
             onClick={completeOnboarding}
-            className="w-full h-14 rounded-2xl font-semibold text-base relative overflow-hidden"
+            className="w-full h-12 rounded-xl font-semibold text-base relative overflow-hidden"
             style={{ 
               background: gradients.gold,
               color: colors.bg.primary,
+              boxShadow: '0 4px 20px rgba(201, 169, 98, 0.4)',
             }}
             whileTap={{ scale: 0.98 }}
           >
@@ -1403,7 +1675,7 @@ export default function OnboardingPage() {
 }
 
 // ============================================================================
-// STEP WRAPPER - ПРОСТАЯ СТРУКТУРА
+// STEP WRAPPER - С ФОНОВЫМ ИЗОБРАЖЕНИЕМ
 // ============================================================================
 
 interface StepWrapperProps {
@@ -1415,6 +1687,8 @@ interface StepWrapperProps {
   nextDisabled?: boolean;
   nextLabel?: string;
   progress: number;
+  backgroundImage?: string;
+  overlayIntensity?: OverlayIntensity;
 }
 
 function StepWrapper({ 
@@ -1425,17 +1699,41 @@ function StepWrapper({
   onNext, 
   nextDisabled = false,
   nextLabel = 'Далее',
-  progress 
+  progress,
+  backgroundImage,
+  overlayIntensity = 'medium',
 }: StepWrapperProps) {
   return (
     <div className="page-scrollable" style={{ background: colors.bg.primary }}>
-      <div className="min-h-full px-4 pb-28">
-        {/* Header */}
-        <div className="pt-4 pb-4">
+      {/* Background Image - FIXED */}
+      {backgroundImage && (
+        <div 
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: `url(${backgroundImage})`,
+            zIndex: 0,
+          }}
+        />
+      )}
+      
+      {/* Gradient overlay - адаптивная прозрачность */}
+      {backgroundImage && (
+        <div 
+          className="fixed inset-0"
+          style={{ 
+            background: getOverlayGradient(overlayIntensity),
+            zIndex: 1,
+          }}
+        />
+      )}
+      
+      <div className="relative min-h-full px-4 pb-24" style={{ zIndex: 2 }}>
+        {/* Header - компактный */}
+        <div className="pt-3 pb-2">
           {/* Progress bar */}
           <div 
-            className="h-1 rounded-full overflow-hidden mb-4" 
-            style={{ background: colors.surface.border }}
+            className="h-1 rounded-full overflow-hidden mb-3" 
+            style={{ background: 'rgba(255, 255, 255, 0.2)' }}
           >
             <motion.div 
               className="h-full rounded-full"
@@ -1447,42 +1745,67 @@ function StepWrapper({
           </div>
 
           {/* Back button & Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button 
               onClick={onBack} 
-              className="w-10 h-10 flex items-center justify-center rounded-xl"
-              style={{ background: colors.surface.default, color: colors.text.secondary }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg"
+              style={{ 
+                background: 'rgba(10, 10, 10, 0.5)', 
+                color: colors.text.primary,
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+              }}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                 <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: colors.text.primary }}>{title}</h1>
-              <p className="text-sm" style={{ color: colors.text.tertiary }}>{subtitle}</p>
+              <h1 
+                className="text-lg font-bold"
+                style={{ 
+                  color: colors.text.primary,
+                  textShadow: '0 2px 8px rgba(0,0,0,0.9)',
+                }}
+              >
+                {title}
+              </h1>
+              <p 
+                className="text-sm"
+                style={{ 
+                  color: colors.text.secondary,
+                  textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+                }}
+              >
+                {subtitle}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="pb-4">
+        <div className="pb-2">
           {children}
         </div>
       </div>
 
-      {/* Fixed Button */}
+      {/* Fixed Button - компактный */}
       <div 
-        className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4"
-        style={{ background: `linear-gradient(to top, ${colors.bg.primary} 80%, transparent)` }}
+        className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
+        style={{ 
+          background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0.6) 60%, transparent 100%)',
+          zIndex: 10,
+        }}
       >
         <motion.button
           onClick={onNext}
           disabled={nextDisabled}
-          className="w-full h-14 rounded-2xl font-semibold text-base transition-all"
+          className="w-full h-12 rounded-xl font-semibold text-base transition-all"
           style={{ 
-            background: nextDisabled ? colors.surface.default : gradients.gold,
+            background: nextDisabled ? 'rgba(255, 255, 255, 0.1)' : gradients.gold,
             color: nextDisabled ? colors.text.tertiary : colors.bg.primary,
             opacity: nextDisabled ? 0.5 : 1,
+            boxShadow: nextDisabled ? 'none' : '0 4px 15px rgba(201, 169, 98, 0.35)',
           }}
           whileTap={nextDisabled ? {} : { scale: 0.98 }}
         >
