@@ -9,14 +9,18 @@ import { Locale } from '@/types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+// Модули приложения
+export type EnabledModule = 'finance' | 'tasks' | 'events' | 'habits' | 'notes' | 'contacts';
+
 export interface UserSettings {
   theme: ThemeMode;
   language: Locale;
   notifications: boolean;
-  notificationFrequency: 'daily' | 'weekly' | 'important' | 'off';
+  notificationFrequency: 'all' | 'important' | 'minimal' | 'off';
   soundEnabled: boolean;
   hapticEnabled: boolean;
   weekStartsOn: 0 | 1; // 0 = Sunday, 1 = Monday
+  enabledModules: EnabledModule[]; // Активные модули
 }
 
 export interface UserFinance {
@@ -110,7 +114,8 @@ export interface OnboardingFormData {
   incomeCategories: string[];
   goals: string[];
   lifestyle: UserProfile['lifestyle'];
-  notifications: UserSettings['notificationFrequency'];
+  notifications: 'all' | 'important' | 'minimal' | 'off';
+  enabledModules: EnabledModule[]; // Активные модули
 }
 
 // ============================================================================
@@ -125,6 +130,7 @@ const defaultSettings: UserSettings = {
   soundEnabled: true,
   hapticEnabled: true,
   weekStartsOn: 1,
+  enabledModules: ['finance'], // Финансы всегда включены по умолчанию
 };
 
 const defaultFinance: UserFinance = {
@@ -351,7 +357,7 @@ export const useUserStore = create<UserState>()(
           name, phone, birthday, language, theme, currency,
           initialBalance, monthlyBudget, salaryDay,
           expenseCategories, incomeCategories, goals,
-          lifestyle, notifications 
+          lifestyle, notifications, enabledModules
         } = data;
         
         set((state) => ({
@@ -371,6 +377,7 @@ export const useUserStore = create<UserState>()(
               theme,
               notificationFrequency: notifications,
               notifications: notifications !== 'off',
+              enabledModules: enabledModules.length > 0 ? enabledModules : ['finance'],
             },
             finance: {
               ...defaultFinance,
