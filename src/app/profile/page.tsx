@@ -149,7 +149,6 @@ export default function ProfilePage() {
       <div className="page-scrollable">
         <header className="px-4 mb-4">
           <div className="flex items-center gap-3">
-            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { hapticFeedback?.('light'); router.back(); }} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)' }}><ArrowLeftIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} /></motion.button>
             <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{language === 'ru' ? 'Профиль' : 'Profile'}</h1>
           </div>
         </header>
