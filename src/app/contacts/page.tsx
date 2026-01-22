@@ -130,13 +130,13 @@ export default function ContactsPage() {
   }), [contacts, upcomingBirthdays]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* ============================================================================
           УНИКАЛЬНЫЙ ФОН СТРАНИЦЫ КОНТАКТОВ
           Тема: Связи, люди, отношения
           Розово-фиолетовое свечение с эффектом социальной сети
           ============================================================================ */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         {/* Основной градиент */}
         <div 
           className="absolute top-0 left-0 w-[70%] h-[50%]"

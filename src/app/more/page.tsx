@@ -73,9 +73,9 @@ export default function MorePage() {
   const getLabel = (item: MenuItem) => language === 'ru' ? item.label : item.labelEn;
 
   return (
-    <div className="" style={{ background: '#0A0A0A' }}>
+    <div className="">
       {/* Уникальный фон - мультицветный */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[90%] h-[40%]" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)' }} />
         <div className="absolute top-1/4 left-0 w-1/3 h-1/3" style={{ background: 'radial-gradient(ellipse at left, rgba(74, 222, 128, 0.06) 0%, transparent 50%)' }} />
         <div className="absolute top-1/3 right-0 w-1/3 h-1/3" style={{ background: 'radial-gradient(ellipse at right, rgba(168, 85, 247, 0.06) 0%, transparent 50%)' }} />

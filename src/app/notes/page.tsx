@@ -72,13 +72,13 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* ============================================================================
           УНИКАЛЬНЫЙ ФОН СТРАНИЦЫ ЗАМЕТОК
           Тема: Творчество, идеи, записи
           Жёлто-янтарное свечение с эффектом бумаги
           ============================================================================ */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         {/* Основной градиент */}
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[90%] h-[50%]"

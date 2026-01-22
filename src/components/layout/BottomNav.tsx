@@ -315,7 +315,7 @@ export default function BottomNav() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="relative mx-auto max-w-md rounded-2xl overflow-hidden"
+        className="relative mx-auto max-w-md rounded-2xl "
         style={{
           background: 'rgba(12, 12, 12, 0.95)',
           backdropFilter: 'blur(40px)',
@@ -345,7 +345,7 @@ export default function BottomNav() {
                   <motion.button
                     onClick={handleAddClick}
                     whileTap={{ scale: 0.9 }}
-                    className="relative flex items-center justify-center w-14 h-14 -mt-6 rounded-full z-10"
+                    className="relative flex items-center justify-center w-14 h-14 -mt-6 rounded-full z-60"
                     style={{
                       background: 'linear-gradient(135deg, #C9A962 0%, #E8D5A3 50%, #C9A962 100%)',
                       boxShadow: '0 4px 20px rgba(201, 169, 98, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',

@@ -86,9 +86,9 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* Background */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50%]" style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201, 169, 98, 0.12) 0%, transparent 60%)' }} />
         <div className="absolute bottom-0 right-0 w-1/2 h-1/3" style={{ background: 'radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.08) 0%, transparent 50%)' }} />
       </div>

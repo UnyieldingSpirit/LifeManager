@@ -39,9 +39,9 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* Background */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         <div className="absolute top-0 right-0 w-[70%] h-[50%]" style={{ background: 'radial-gradient(ellipse 60% 50% at 100% 0%, rgba(251, 191, 36, 0.15) 0%, transparent 60%)' }} />
         <div className="absolute bottom-0 left-0 w-1/2 h-1/3" style={{ background: 'radial-gradient(ellipse at bottom left, rgba(74, 222, 128, 0.1) 0%, transparent 50%)' }} />
         <div className="absolute top-24 left-8 w-1.5 h-1.5 rounded-full bg-yellow-400 opacity-40 animate-float" />
@@ -51,7 +51,6 @@ export default function GoalsPage() {
       <div className="page-scrollable">
         <header className="px-4 mb-4">
           <div className="flex items-center gap-3">
-            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { hapticFeedback?.('light'); router.back(); }} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)' }}><ArrowLeftIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} /></motion.button>
             <div>
               <div className="flex items-center gap-2"><FlagIcon className="w-6 h-6" style={{ color: '#F97316' }} /><h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{language === 'ru' ? 'Цели накоплений' : 'Saving Goals'}</h1></div>
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{goals.length} {language === 'ru' ? 'целей' : 'goals'}</p>

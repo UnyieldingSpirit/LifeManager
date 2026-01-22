@@ -9,10 +9,10 @@ export default function FAB() {
   const openBottomSheet = useStore((state) => state.openBottomSheet);
   const { hapticFeedback } = useTelegram();
 
-  const handleClick = () => {
-    hapticFeedback('medium');
-    // openBottomSheet('addTask');
-  };
+const handleClick = () => {
+  hapticFeedback('medium');
+  openBottomSheet('quick-add');
+};
 
   return (
     <motion.button

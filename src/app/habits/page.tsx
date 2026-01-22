@@ -73,7 +73,7 @@ export default function HabitsPage() {
   };
 
   return (
-    <div className="" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* ============================================================================
           УНИКАЛЬНЫЙ ФОН СТРАНИЦЫ ПРИВЫЧЕК
           Тема: Энергия, рост, прогресс, streak

@@ -164,13 +164,13 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="" >
       {/* ============================================================================
           УНИКАЛЬНЫЙ ФОН СТРАНИЦЫ ИСТОРИИ
           Тема: Время, хронология, записи
           Приглушённое сине-серое свечение
           ============================================================================ */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="">
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[40%]"
           style={{
@@ -274,14 +274,6 @@ export default function HistoryPage() {
         <header className="px-4 mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => router.back()}
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--surface)' }}
-              >
-                <ArrowLeftIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
-              </motion.button>
               <div>
                 <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
                   {language === 'ru' ? 'История' : 'History'}
