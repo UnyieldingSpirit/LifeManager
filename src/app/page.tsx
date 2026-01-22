@@ -648,50 +648,99 @@ export default function DashboardPage() {
   if (!mounted || !isOnboarded) return null;
   
   return (
-    <div 
-      className="min-h-screen pb-28 scrollbar-hide"
-      style={{ background: 'var(--background)' }}
-    >
-      {/* Header */}
-      <header className="px-4 pt-safe">
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between py-4"
-        >
-          <div className="flex items-center gap-3">
-            <motion.span 
-              className="text-3xl"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              {greeting.emoji}
-            </motion.span>
-            <div>
-              <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {greeting.text}, {userName}!
-              </h1>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                {format(new Date(), 'EEEE, d MMMM', { locale: dateLocale })}
-              </p>
-            </div>
-          </div>
-          
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => hapticFeedback?.('light')}
-            className="relative w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--surface)' }}
-          >
-            <BellIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
-            {/* Notification dot */}
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: 'var(--error)' }} />
-          </motion.button>
-        </motion.div>
-      </header>
+    <div className="" style={{ background: '#0A0A0A' }}>
+      {/* ============================================================================
+          УНИКАЛЬНЫЙ ФОН ГЛАВНОЙ СТРАНИЦЫ
+          Тема: Премиум, золото, успех
+          Мягкое золотое свечение с эффектом luxury
+          ============================================================================ */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Основной золотой градиент сверху */}
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[45%]"
+          style={{
+            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201, 169, 98, 0.15) 0%, transparent 60%)',
+          }}
+        />
+        
+        {/* Зелёное свечение для дохода слева */}
+        <div 
+          className="absolute top-1/4 left-0 w-1/3 h-1/3"
+          style={{
+            background: 'radial-gradient(ellipse at left, rgba(74, 222, 128, 0.08) 0%, transparent 50%)',
+          }}
+        />
+        
+        {/* Синее свечение для задач справа */}
+        <div 
+          className="absolute top-1/2 right-0 w-1/3 h-1/3"
+          style={{
+            background: 'radial-gradient(ellipse at right, rgba(96, 165, 250, 0.08) 0%, transparent 50%)',
+          }}
+        />
+        
+        {/* Оранжевое свечение для привычек снизу */}
+        <div 
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 w-1/2 h-1/4"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(249, 115, 22, 0.08) 0%, transparent 50%)',
+          }}
+        />
+        
+        {/* Декоративные частицы */}
+        <div className="absolute top-28 right-8 w-1.5 h-1.5 rounded-full bg-amber-400 opacity-30 animate-float" />
+        <div className="absolute top-40 left-10 w-1 h-1 rounded-full bg-green-400 opacity-25 animate-float" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-56 right-14 w-1 h-1 rounded-full bg-blue-400 opacity-20 animate-float" style={{ animationDelay: '1s' }} />
+      </div>
       
-      {/* Content */}
-      <main className="px-4 space-y-4">
+      {/* Scrollable Content */}
+      <div className="page-scrollable">
+        {/* Header */}
+        <header className="px-4 mb-4">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <motion.div 
+                className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                style={{ 
+                  background: 'linear-gradient(135deg, var(--primary-subtle) 0%, rgba(201, 169, 98, 0.3) 100%)',
+                  boxShadow: '0 4px 15px rgba(201, 169, 98, 0.2)',
+                }}
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <SparklesIcon className="w-6 h-6" style={{ color: 'var(--primary)' }} />
+              </motion.div>
+              <div>
+                <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  {greeting.text}, {userName}!
+                </h1>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  {format(new Date(), 'EEEE, d MMMM', { locale: dateLocale })}
+                </p>
+              </div>
+            </div>
+            
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                hapticFeedback?.('light');
+                router.push('/profile');
+              }}
+              className="relative w-11 h-11 rounded-xl flex items-center justify-center"
+              style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)' }}
+            >
+              <BellIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: 'var(--error)' }} />
+            </motion.button>
+          </motion.div>
+        </header>
+        
+        {/* Content */}
+        <main className="px-4 space-y-4 pb-8">
         {/* Balance Card - Always show if finance module enabled */}
         {enabledModules.includes('finance') && (
           <motion.div
@@ -795,6 +844,7 @@ export default function DashboardPage() {
           />
         )}
       </main>
+      </div>
     </div>
   );
 }
