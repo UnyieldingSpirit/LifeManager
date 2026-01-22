@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUserStore, OnboardingFormData, EnabledModule } from '@/store/userStore';
+import { useStore, OnboardingFormData, EnabledModule } from '@/store';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Locale } from '@/types';
 
@@ -322,8 +322,8 @@ const notificationOptions = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { hapticFeedback, user } = useTelegram();
-  const saveOnboardingData = useUserStore((state) => state.saveOnboardingData);
-  const isOnboarded = useUserStore((state) => state.isOnboarded);
+  const saveOnboardingData = useStore((state) => state.saveOnboardingData);
+  const isOnboarded = useStore((state) => state.isOnboarded);
 
   useEffect(() => {
     if (isOnboarded) {

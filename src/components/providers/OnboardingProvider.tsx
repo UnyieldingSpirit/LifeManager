@@ -4,7 +4,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUserStore } from '@/store/userStore';
+import { useStore } from '@/store';
 
 interface OnboardingProviderProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ export default function OnboardingProvider({ children }: OnboardingProviderProps
   const [isChecking, setIsChecking] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
   
-  const isOnboarded = useUserStore((state) => state.isOnboarded);
+  const isOnboarded = useStore((state) => state.isOnboarded);
 
   // Ждём гидратацию Zustand store
   useEffect(() => {

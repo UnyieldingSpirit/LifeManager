@@ -45,9 +45,14 @@ interface AppState {
   updateSettings: (settings: Partial<UserSettings>) => void;
   setTheme: (theme: ThemeMode) => void;
   setLanguage: (language: Locale) => void;
+  setWeekStartsOn: (day: 0 | 1) => void;
+  toggleNotifications: () => void;
+  toggleSound: () => void;
+  toggleHaptic: () => void;
   updateFinance: (finance: Partial<UserFinance>) => void;
   updateProfile: (profile: Partial<UserProfile>) => void;
   updateStats: (stats: Partial<UserStats>) => void;
+  updateBalance: (amount: number, type: 'income' | 'expense') => void;
   saveOnboardingData: (data: OnboardingFormData) => void;
   setOnboarded: (value: boolean) => void;
   
@@ -238,6 +243,25 @@ export const useStore = create<AppState>()(
         get().updateSettings({ language });
       },
       
+      setWeekStartsOn: (day) => {
+        get().updateSettings({ weekStartsOn: day });
+      },
+      
+      toggleNotifications: () => {
+        const current = get().profile?.settings.notifications ?? true;
+        get().updateSettings({ notifications: !current });
+      },
+      
+      toggleSound: () => {
+        const current = get().profile?.settings.soundEnabled ?? true;
+        get().updateSettings({ soundEnabled: !current });
+      },
+      
+      toggleHaptic: () => {
+        const current = get().profile?.settings.hapticEnabled ?? true;
+        get().updateSettings({ hapticEnabled: !current });
+      },
+      
       updateFinance: (newFinance) => {
         set((state) => ({
           profile: state.profile
@@ -258,6 +282,29 @@ export const useStore = create<AppState>()(
             ? { ...state.profile, stats: { ...state.profile.stats, ...newStats } }
             : null,
         }));
+      },
+      
+      updateBalance: (amount, type) => {
+        set((state) => {
+          if (!state.profile) return state;
+          
+          const stats = state.profile.stats;
+          const newBalance = type === 'income' 
+            ? stats.currentBalance + amount 
+            : stats.currentBalance - amount;
+          
+          return {
+            profile: {
+              ...state.profile,
+              stats: {
+                ...stats,
+                currentBalance: newBalance,
+                totalIncome: type === 'income' ? stats.totalIncome + amount : stats.totalIncome,
+                totalExpenses: type === 'expense' ? stats.totalExpenses + amount : stats.totalExpenses,
+              },
+            },
+          };
+        });
       },
       
       setOnboarded: (value) => {
