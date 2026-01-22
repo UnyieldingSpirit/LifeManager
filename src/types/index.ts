@@ -128,3 +128,4 @@ export type Locale = 'ru' | 'en' | 'uz';
 export interface LocaleMessages {
   [key: string]: string | LocaleMessages;
 }
+

@@ -4,6 +4,7 @@
 import { ReactNode, useRef, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import TelegramWebAppInitializer from './TelegramWebAppInitializer';
+import OnboardingProvider from '@/components/providers/OnboardingProvider';
 
 // === TaskFlow импорты ===
 import BottomNav from './BottomNav';
@@ -122,8 +123,11 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     }
   };
 
+  // Проверяем, находимся ли на странице онбординга
+  const isOnboardingPage = pathname.startsWith('/onboarding') || pathname.startsWith('/welcome');
+
   return (
-    <>
+    <OnboardingProvider>
       {/* Основной контент с поддержкой скроллинга */}
       <main 
         ref={mainRef}
@@ -137,21 +141,21 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
         <TelegramWebAppInitializer />
         {children}
         
-        {/* Минималистичный лоадер переходов между страницами - только по центру без затемнения */}
+        {/* Минималистичный лоадер переходов между страницами */}
         {isLoading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
             <div className="loader">
               <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <linearGradient x1="8.042%" y1="0%" x2="65.682%" y2="23.865%" id="a">
-                    <stop stopColor="#FF7560" stopOpacity="0" offset="0%"/>
-                    <stop stopColor="#FF7560" stopOpacity=".631" offset="63.146%"/>
-                    <stop stopColor="#FF7560" offset="100%"/>
+                  <linearGradient x1="8.042%" y1="0%" x2="65.682%" y2="23.865%" id="loaderGradient">
+                    <stop stopColor="#C9A962" stopOpacity="0" offset="0%"/>
+                    <stop stopColor="#C9A962" stopOpacity=".631" offset="63.146%"/>
+                    <stop stopColor="#C9A962" offset="100%"/>
                   </linearGradient>
                 </defs>
                 <g fill="none" fillRule="evenodd">
                   <g transform="translate(1 1)">
-                    <path d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" strokeWidth="3">
+                    <path d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#loaderGradient)" strokeWidth="3">
                       <animateTransform
                         attributeName="transform"
                         type="rotate"
@@ -168,9 +172,14 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
         )}
       </main>
 
-      {/* === TaskFlow компоненты === */}
-      <BottomNav />
-      <FAB />
+      {/* === TaskFlow компоненты (скрываем на онбординге) === */}
+      {!isOnboardingPage && (
+        <>
+          <BottomNav />
+          <FAB />
+        </>
+      )}
+      
       <ToastContainer />
       
       <BottomSheet
@@ -180,6 +189,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
       >
         {renderBottomSheetContent()}
       </BottomSheet>
-    </>
+    </OnboardingProvider>
   );
 }

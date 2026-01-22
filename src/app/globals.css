@@ -1,91 +1,92 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   🎨 TASKFLOW DESIGN SYSTEM - LIQUID GLASS EDITION
-   Основано на нейронаучном подходе к UX и эмоциональном дизайне
+   🎨 TASKFLOW DESIGN SYSTEM - CARBON PREMIUM EDITION
+   Премиальная карбоново-черная тема с глубокими тонами
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
-     LIGHT MODE - "Morning Mist" Theme
-     Теплые, мягкие тона с легким градиентом - не просто белый
+     CARBON PREMIUM THEME
+     Глубокий карбон с премиальными акцентами
      ═══════════════════════════════════════════════════════════════════════ */
   
-  /* Background Gradients */
-  --bg-gradient-start: #F0F4FF;
-  --bg-gradient-end: #FDF4F5;
-  --background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-  --background-solid: #F8FAFF;
+  /* Background Gradients - Deep Carbon */
+  --bg-gradient-start: #0A0A0A;
+  --bg-gradient-end: #111111;
+  --background: linear-gradient(135deg, var(--bg-gradient-start) 0%, #0D0D0D 50%, var(--bg-gradient-end) 100%);
+  --background-solid: #0A0A0A;
   
-  /* Glass Effects */
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-heavy: rgba(255, 255, 255, 0.85);
-  --glass-bg-light: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 8px 32px rgba(99, 102, 241, 0.08);
-  --glass-shadow-lg: 0 16px 48px rgba(99, 102, 241, 0.12);
+  /* Glass Effects - Carbon Glass */
+  --glass-bg: rgba(18, 18, 18, 0.85);
+  --glass-bg-heavy: rgba(12, 12, 12, 0.95);
+  --glass-bg-light: rgba(28, 28, 28, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
   --glass-blur: 20px;
   --glass-blur-heavy: 40px;
   
-  /* Brand Colors - Vibrant Indigo */
-  --primary: #6366F1;
-  --primary-hover: #5558E8;
-  --primary-active: #4F46E5;
-  --primary-subtle: rgba(99, 102, 241, 0.12);
-  --primary-glow: rgba(99, 102, 241, 0.35);
+  /* Brand Colors - Premium Gold Accent */
+  --primary: #C9A962;
+  --primary-hover: #D4B86A;
+  --primary-active: #B8954F;
+  --primary-subtle: rgba(201, 169, 98, 0.12);
+  --primary-glow: rgba(201, 169, 98, 0.3);
   
-  /* Accent Colors */
-  --accent: #EC4899;
-  --accent-subtle: rgba(236, 72, 153, 0.12);
+  /* Accent Colors - Rose Gold */
+  --accent: #E8B4B8;
+  --accent-subtle: rgba(232, 180, 184, 0.12);
   
-  /* Semantic Colors */
-  --success: #10B981;
-  --success-subtle: rgba(16, 185, 129, 0.12);
-  --success-glow: rgba(16, 185, 129, 0.3);
+  /* Semantic Colors - Muted Premium */
+  --success: #4ADE80;
+  --success-subtle: rgba(74, 222, 128, 0.12);
+  --success-glow: rgba(74, 222, 128, 0.25);
   
-  --warning: #F59E0B;
-  --warning-subtle: rgba(245, 158, 11, 0.12);
-  --warning-glow: rgba(245, 158, 11, 0.3);
+  --warning: #FBBF24;
+  --warning-subtle: rgba(251, 191, 36, 0.12);
+  --warning-glow: rgba(251, 191, 36, 0.25);
   
-  --error: #EF4444;
-  --error-subtle: rgba(239, 68, 68, 0.12);
-  --error-glow: rgba(239, 68, 68, 0.3);
+  --error: #F87171;
+  --error-subtle: rgba(248, 113, 113, 0.12);
+  --error-glow: rgba(248, 113, 113, 0.25);
   
-  --info: #3B82F6;
-  --info-subtle: rgba(59, 130, 246, 0.12);
+  --info: #60A5FA;
+  --info-subtle: rgba(96, 165, 250, 0.12);
   
-  /* Surface Colors */
-  --surface: rgba(255, 255, 255, 0.8);
-  --surface-solid: #FFFFFF;
-  --surface-elevated: rgba(255, 255, 255, 0.92);
-  --surface-dim: rgba(241, 245, 249, 0.8);
+  /* Surface Colors - Carbon Layers */
+  --surface: rgba(22, 22, 22, 0.9);
+  --surface-solid: #161616;
+  --surface-elevated: rgba(32, 32, 32, 0.95);
+  --surface-dim: rgba(14, 14, 14, 0.9);
+  --surface-secondary: rgba(38, 38, 38, 0.8);
   
-  /* Border Colors */
-  --border: rgba(148, 163, 184, 0.2);
-  --border-hover: rgba(148, 163, 184, 0.35);
-  --border-focus: rgba(99, 102, 241, 0.5);
+  /* Border Colors - Subtle Metallic */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(201, 169, 98, 0.5);
   
-  /* Text Colors */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #94A3B8;
-  --text-inverse: #FFFFFF;
-  --text-brand: #6366F1;
+  /* Text Colors - Premium Hierarchy */
+  --text-primary: #F5F5F5;
+  --text-secondary: #A3A3A3;
+  --text-tertiary: #666666;
+  --text-inverse: #0A0A0A;
+  --text-brand: #C9A962;
   
-  /* Priority Colors */
-  --priority-urgent: #EF4444;
-  --priority-high: #F97316;
+  /* Priority Colors - Refined */
+  --priority-urgent: #F87171;
+  --priority-high: #FB923C;
   --priority-medium: #FBBF24;
-  --priority-low: #10B981;
+  --priority-low: #4ADE80;
   
-  /* Category Colors */
-  --category-work: #6366F1;
-  --category-personal: #EC4899;
-  --category-shopping: #14B8A6;
-  --category-health: #10B981;
-  --category-finance: #F59E0B;
-  --category-birthday: #A855F7;
-  --category-call: #3B82F6;
+  /* Category Colors - Premium Palette */
+  --category-work: #818CF8;
+  --category-personal: #F472B6;
+  --category-shopping: #2DD4BF;
+  --category-health: #4ADE80;
+  --category-finance: #C9A962;
+  --category-birthday: #C084FC;
+  --category-call: #60A5FA;
   
   /* Layout */
   --nav-height: 64px;
@@ -114,82 +115,83 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DARK MODE - "Midnight Aurora" Theme
-   Глубокие синие и фиолетовые тона с aurora эффектами
+   DARK MODE - Same as Light (Unified Carbon Theme)
+   Дублируем для единообразия
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  /* Background Gradients - Aurora Effect */
-  --bg-gradient-start: #0C0F1A;
-  --bg-gradient-end: #1A0F1F;
-  --background: linear-gradient(135deg, var(--bg-gradient-start) 0%, #12101F 50%, var(--bg-gradient-end) 100%);
-  --background-solid: #0E1117;
+  /* Background Gradients - Deep Carbon */
+  --bg-gradient-start: #0A0A0A;
+  --bg-gradient-end: #111111;
+  --background: linear-gradient(135deg, var(--bg-gradient-start) 0%, #0D0D0D 50%, var(--bg-gradient-end) 100%);
+  --background-solid: #0A0A0A;
   
-  /* Glass Effects - Darker, more mysterious */
-  --glass-bg: rgba(15, 23, 42, 0.75);
-  --glass-bg-heavy: rgba(15, 23, 42, 0.88);
-  --glass-bg-light: rgba(30, 41, 59, 0.5);
-  --glass-border: rgba(99, 102, 241, 0.15);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  /* Glass Effects - Carbon Glass */
+  --glass-bg: rgba(18, 18, 18, 0.85);
+  --glass-bg-heavy: rgba(12, 12, 12, 0.95);
+  --glass-bg-light: rgba(28, 28, 28, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
   
-  /* Brand Colors - Brighter for contrast */
-  --primary: #818CF8;
-  --primary-hover: #A5B4FC;
-  --primary-active: #6366F1;
-  --primary-subtle: rgba(129, 140, 248, 0.15);
-  --primary-glow: rgba(129, 140, 248, 0.4);
+  /* Brand Colors - Premium Gold Accent */
+  --primary: #C9A962;
+  --primary-hover: #D4B86A;
+  --primary-active: #B8954F;
+  --primary-subtle: rgba(201, 169, 98, 0.12);
+  --primary-glow: rgba(201, 169, 98, 0.3);
   
-  /* Accent */
-  --accent: #F472B6;
-  --accent-subtle: rgba(244, 114, 182, 0.15);
+  /* Accent Colors - Rose Gold */
+  --accent: #E8B4B8;
+  --accent-subtle: rgba(232, 180, 184, 0.12);
   
-  /* Semantic Colors - Adjusted for dark */
-  --success: #34D399;
-  --success-subtle: rgba(52, 211, 153, 0.15);
-  --success-glow: rgba(52, 211, 153, 0.35);
+  /* Semantic Colors - Muted Premium */
+  --success: #4ADE80;
+  --success-subtle: rgba(74, 222, 128, 0.12);
+  --success-glow: rgba(74, 222, 128, 0.25);
   
   --warning: #FBBF24;
-  --warning-subtle: rgba(251, 191, 36, 0.15);
-  --warning-glow: rgba(251, 191, 36, 0.35);
+  --warning-subtle: rgba(251, 191, 36, 0.12);
+  --warning-glow: rgba(251, 191, 36, 0.25);
   
   --error: #F87171;
-  --error-subtle: rgba(248, 113, 113, 0.15);
-  --error-glow: rgba(248, 113, 113, 0.35);
+  --error-subtle: rgba(248, 113, 113, 0.12);
+  --error-glow: rgba(248, 113, 113, 0.25);
   
   --info: #60A5FA;
-  --info-subtle: rgba(96, 165, 250, 0.15);
+  --info-subtle: rgba(96, 165, 250, 0.12);
   
-  /* Surface Colors */
-  --surface: rgba(30, 41, 59, 0.7);
-  --surface-solid: #1E293B;
-  --surface-elevated: rgba(51, 65, 85, 0.8);
-  --surface-dim: rgba(15, 23, 42, 0.8);
+  /* Surface Colors - Carbon Layers */
+  --surface: rgba(22, 22, 22, 0.9);
+  --surface-solid: #161616;
+  --surface-elevated: rgba(32, 32, 32, 0.95);
+  --surface-dim: rgba(14, 14, 14, 0.9);
+  --surface-secondary: rgba(38, 38, 38, 0.8);
   
-  /* Border Colors */
-  --border: rgba(99, 102, 241, 0.12);
-  --border-hover: rgba(99, 102, 241, 0.25);
-  --border-focus: rgba(129, 140, 248, 0.5);
+  /* Border Colors - Subtle Metallic */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(201, 169, 98, 0.5);
   
-  /* Text Colors */
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-tertiary: #64748B;
-  --text-inverse: #0F172A;
-  --text-brand: #A5B4FC;
+  /* Text Colors - Premium Hierarchy */
+  --text-primary: #F5F5F5;
+  --text-secondary: #A3A3A3;
+  --text-tertiary: #666666;
+  --text-inverse: #0A0A0A;
+  --text-brand: #C9A962;
   
-  /* Priority Colors - Brighter */
+  /* Priority Colors - Refined */
   --priority-urgent: #F87171;
   --priority-high: #FB923C;
-  --priority-medium: #FCD34D;
-  --priority-low: #34D399;
+  --priority-medium: #FBBF24;
+  --priority-low: #4ADE80;
   
-  /* Category Colors - Brighter */
+  /* Category Colors - Premium Palette */
   --category-work: #818CF8;
   --category-personal: #F472B6;
   --category-shopping: #2DD4BF;
-  --category-health: #34D399;
-  --category-finance: #FBBF24;
+  --category-health: #4ADE80;
+  --category-finance: #C9A962;
   --category-birthday: #C084FC;
   --category-call: #60A5FA;
 }
@@ -230,6 +232,24 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARBON TEXTURE OVERLAY (Optional Premium Effect)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.01) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.01) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -293,6 +313,29 @@ body {
 
 .glass-button:active {
   transform: scale(0.97);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM METALLIC EFFECTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metallic-gold {
+  background: linear-gradient(135deg, #C9A962 0%, #E8D5A3 50%, #C9A962 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metallic-border {
+  border: 1px solid;
+  border-image: linear-gradient(135deg, rgba(201, 169, 98, 0.3) 0%, rgba(201, 169, 98, 0.1) 50%, rgba(201, 169, 98, 0.3) 100%) 1;
+}
+
+.premium-glow {
+  box-shadow: 
+    0 0 20px rgba(201, 169, 98, 0.15),
+    0 0 40px rgba(201, 169, 98, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -382,6 +425,15 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes gold-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 .animate-spring-in {
   animation: spring-in 0.4s var(--ease-spring) forwards;
 }
@@ -425,6 +477,17 @@ body {
   animation: spin 1s linear infinite;
 }
 
+.animate-gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--primary) 25%,
+    #E8D5A3 50%,
+    var(--primary) 75%
+  );
+  background-size: 200% 100%;
+  animation: gold-shimmer 3s ease-in-out infinite;
+}
+
 /* Stagger Animation Classes */
 .stagger-1 { animation-delay: 0ms; }
 .stagger-2 { animation-delay: 50ms; }
@@ -437,7 +500,7 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer utilities {
-  /* Scrollbar */
+  /* Scrollbar - Premium Dark */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -445,6 +508,24 @@ body {
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  .scrollbar-premium::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-premium::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-premium::-webkit-scrollbar-thumb {
+    background: rgba(201, 169, 98, 0.3);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-premium::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 169, 98, 0.5);
   }
   
   /* Safe Areas */
@@ -464,6 +545,13 @@ body {
     background-clip: text;
   }
   
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #C9A962 0%, #E8D5A3 50%, #C9A962 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
   /* Glow Effects */
   .glow-primary {
     box-shadow: 0 0 20px var(--primary-glow);
@@ -475,6 +563,10 @@ body {
   
   .glow-error {
     box-shadow: 0 0 20px var(--error-glow);
+  }
+  
+  .glow-gold {
+    box-shadow: 0 0 30px rgba(201, 169, 98, 0.25);
   }
   
   /* Line Clamp */
@@ -501,6 +593,13 @@ body {
   .no-select {
     -webkit-user-select: none;
     user-select: none;
+  }
+  
+  /* Carbon Surface */
+  .carbon-surface {
+    background: 
+      linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+      var(--surface);
   }
 }
 
