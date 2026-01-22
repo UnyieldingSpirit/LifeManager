@@ -78,7 +78,7 @@ export default function ToastContainer() {
   const removeToast = useStore((state) => state.removeToast);
 
   return (
-    <div className="fixed top-4 left-3 right-3 z-[100] pointer-events-none pt-safe">
+    <div className="fixed top-28 left-3 right-3 z-[100] pointer-events-none pt-safe">
       <div className="flex flex-col gap-2 pointer-events-auto">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
