@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUIStore } from '@/store/uiStore';
+import { useStore } from '@/store';
 import { Toast } from '@/types';
 
 const toastConfig: Record<Toast['type'], { emoji: string; bg: string; border: string }> = {
@@ -74,8 +74,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
 }
 
 export default function ToastContainer() {
-  const toasts = useUIStore((state) => state.toasts);
-  const removeToast = useUIStore((state) => state.removeToast);
+  const toasts = useStore((state) => state.toasts);
+  const removeToast = useStore((state) => state.removeToast);
 
   return (
     <div className="fixed top-4 left-3 right-3 z-[100] pointer-events-none pt-safe">

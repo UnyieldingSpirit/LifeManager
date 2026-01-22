@@ -2,16 +2,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useUIStore } from '@/store/uiStore';
+import { useStore } from '@/store';
 import { useTelegram } from '@/hooks/useTelegram';
 
 export default function FAB() {
-  const openBottomSheet = useUIStore((state) => state.openBottomSheet);
+  const openBottomSheet = useStore((state) => state.openBottomSheet);
   const { hapticFeedback } = useTelegram();
 
   const handleClick = () => {
-    hapticFeedback('impact', 'medium');
-    openBottomSheet('addTask');
+    hapticFeedback('medium');
+    // openBottomSheet('addTask');
   };
 
   return (

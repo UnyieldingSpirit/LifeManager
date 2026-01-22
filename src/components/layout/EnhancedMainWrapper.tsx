@@ -6,14 +6,16 @@ import { usePathname } from 'next/navigation';
 import TelegramWebAppInitializer from './TelegramWebAppInitializer';
 import OnboardingProvider from '@/components/providers/OnboardingProvider';
 
-// === TaskFlow импорты ===
+// Layout компоненты
 import BottomNav from './BottomNav';
 import FAB from './FAB';
+
+// UI компоненты
 import ToastContainer from '@/components/ui/Toast';
 import BottomSheet from '@/components/ui/BottomSheet';
-import AddTaskForm from '@/components/tasks/AddTaskForm';
-import { useUIStore } from '@/store/uiStore';
-import { useUserStore } from '@/store/userStore';
+
+// Единый стор и хуки
+import { useStore } from '@/store';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -27,14 +29,15 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   const [prevPath, setPrevPath] = useState('');
   const pathname = usePathname();
 
-  // === TaskFlow hooks ===
+  // Хуки
   const { t } = useTranslation();
   const { colorScheme, isReady } = useTelegram();
-  const setTheme = useUserStore((state) => state.setTheme);
-  const theme = useUserStore((state) => state.profile?.settings.theme || 'system');
-  const isBottomSheetOpen = useUIStore((state) => state.isBottomSheetOpen);
-  const bottomSheetContent = useUIStore((state) => state.bottomSheetContent);
-  const closeBottomSheet = useUIStore((state) => state.closeBottomSheet);
+  
+  // Единый стор
+  const setTheme = useStore((state) => state.setTheme);
+  const theme = useStore((state) => state.profile?.settings.theme || 'system');
+  const bottomSheet = useStore((state) => state.bottomSheet);
+  const closeBottomSheet = useStore((state) => state.closeBottomSheet);
 
   // === TaskFlow: Sync Telegram theme ===
   useEffect(() => {
@@ -100,27 +103,10 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     }, 600);
   };
 
-  // === TaskFlow: Bottom sheet helpers ===
-  const getBottomSheetTitle = () => {
-    switch (bottomSheetContent) {
-      case 'addTask':
-        return t('tasks.newTask');
-      case 'taskDetails':
-        return t('tasks.title');
-      case 'filters':
-        return 'Фильтры';
-      default:
-        return undefined;
-    }
-  };
 
+  // Контент для BottomSheet (формы рендерятся на страницах)
   const renderBottomSheetContent = () => {
-    switch (bottomSheetContent) {
-      case 'addTask':
-        return <AddTaskForm />;
-      default:
-        return null;
-    }
+    return null;
   };
 
   // Проверяем, находимся ли на странице онбординга
@@ -183,9 +169,8 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
       <ToastContainer />
       
       <BottomSheet
-        isOpen={isBottomSheetOpen}
+         isOpen={bottomSheet.isOpen}
         onClose={closeBottomSheet}
-        title={getBottomSheetTitle()}
       >
         {renderBottomSheetContent()}
       </BottomSheet>

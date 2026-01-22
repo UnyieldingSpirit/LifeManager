@@ -1,13 +1,13 @@
 // src/lib/utils.ts
 // Утилиты для LifeLedger
 
-import { BalanceState } from '@/types/finance';
+// import { BalanceState } from '@/types/index';
 import { CURRENCIES } from './constants';
 
 // ============================================================================
 // ФОРМАТИРОВАНИЕ ДЕНЕГ
 // ============================================================================
-
+type BalanceState = 'normal' | 'warning' | 'danger' | 'negative';
 export const formatMoney = (
   amount: number,
   currency: string = 'UZS',
@@ -154,7 +154,7 @@ export const getBalanceState = (
   spent: number,
   budget: number,
   balance: number
-): BalanceState => {
+) => {
   if (balance < 0) return 'negative';
   
   const percentage = budget > 0 ? (spent / budget) * 100 : 0;
@@ -317,4 +317,17 @@ export const haptic = (
         break;
     }
   }
+};
+
+// ============================================================================
+// АЛИАСЫ ДЛЯ СОВМЕСТИМОСТИ
+// ============================================================================
+
+// formatCurrency - алиас для formatMoney с упрощённым API
+export const formatCurrency = (
+  amount: number, 
+  currency: string = 'UZS',
+  compact: boolean = false
+): string => {
+  return formatMoney(amount, currency, { compact, showCurrency: true });
 };
