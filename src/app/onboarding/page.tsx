@@ -5,8 +5,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, OnboardingFormData, EnabledModule } from '@/store';
-import { useTelegram } from '@/hooks/useTelegram';
-import { Locale } from '@/types';
+import { useTelegram } from '@/hooks';
+import { getAvailableLanguages, type Locale } from '@/locales';
 
 // ============================================================================
 // ЦВЕТОВАЯ СИСТЕМА
@@ -193,11 +193,8 @@ const introSlides = [
   },
 ];
 
-const languages = [
-  { id: 'ru' as Locale, name: 'Русский', flag: '🇷🇺' },
-  { id: 'en' as Locale, name: 'English', flag: '🇺🇸' },
-  { id: 'uz' as Locale, name: "O'zbek", flag: '🇺🇿' },
-];
+// Используем все 7 языков из i18n системы
+const languages = getAvailableLanguages();
 
 const themes = [
   { id: 'dark' as ThemeMode, name: 'Тёмная', icon: '🌙' },
@@ -272,10 +269,13 @@ const lifestyleOptions = [
 
 const currencies = [
   { code: 'UZS', name: 'Сум', symbol: "so'm", flag: '🇺🇿' },
-  { code: 'RUB', name: 'Рубль', symbol: '₽', flag: '🇷🇺' },
   { code: 'USD', name: 'Доллар', symbol: '$', flag: '🇺🇸' },
   { code: 'EUR', name: 'Евро', symbol: '€', flag: '🇪🇺' },
+  { code: 'RUB', name: 'Рубль', symbol: '₽', flag: '🇷🇺' },
   { code: 'KZT', name: 'Тенге', symbol: '₸', flag: '🇰🇿' },
+  { code: 'KGS', name: 'Сом', symbol: 'сом', flag: '🇰🇬' },
+  { code: 'TJS', name: 'Сомони', symbol: 'с.', flag: '🇹🇯' },
+  { code: 'TRY', name: 'Лира', symbol: '₺', flag: '🇹🇷' },
 ];
 
 const expenseCategories = [
@@ -563,8 +563,12 @@ export default function OnboardingPage() {
           style={{
             ...(formData.name ? glassStyles.inputActive : glassStyles.input),
             color: colors.text.primary,
+            fontSize: '16px', // Prevent iOS zoom
           }}
           autoFocus
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
         <p className="text-xs text-center" style={{ color: colors.text.tertiary }}>
           Можно изменить позже в настройках
@@ -573,66 +577,98 @@ export default function OnboardingPage() {
     </StepWrapper>
   );
 
-  // ============ PREFERENCES STEP ============
-  const renderPreferencesStep = () => (
-    <StepWrapper
-      title="Настройки"
-      subtitle="Язык и тема"
-      onBack={goBack}
-      onNext={goNext}
-      progress={progress}
-      backgroundImage={stepBackgrounds['preferences']}
-      overlayIntensity={stepOverlayIntensity['preferences']}
-    >
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Язык</p>
-          <div className="flex gap-2">
-            {languages.map((lang) => {
-              const isSelected = formData.language === lang.id;
-              return (
-                <button
-                  key={lang.id}
-                  onClick={() => {
-                    setFormData(prev => ({ ...prev, language: lang.id }));
-                    hapticFeedback?.('selection');
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl transition-all"
-                  style={isSelected ? glassStyles.cardSelected : glassStyles.card}
-                >
-                  <span className="text-xl">{lang.flag}</span>
-                  <span className="text-sm font-medium" style={{ color: colors.text.primary }}>{lang.name}</span>
-                </button>
-              );
-            })}
+  // ============ PREFERENCES STEP (с 7 языками) ============
+  const renderPreferencesStep = () => {
+    const selectedLang = languages.find(l => l.code === formData.language);
+    
+    return (
+      <StepWrapper
+        title="Настройки"
+        subtitle="Язык и тема"
+        onBack={goBack}
+        onNext={goNext}
+        progress={progress}
+        backgroundImage={stepBackgrounds['preferences']}
+        overlayIntensity={stepOverlayIntensity['preferences']}
+      >
+        <div className="space-y-4">
+          {/* Языки - компактная сетка */}
+          <div>
+            <p className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>
+              Язык интерфейса
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {languages.map((lang) => {
+                const isSelected = formData.language === lang.code;
+                return (
+                  <motion.button
+                    key={lang.code}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, language: lang.code }));
+                      hapticFeedback?.('selection');
+                    }}
+                    className="flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all"
+                    style={isSelected ? glassStyles.cardSelected : glassStyles.card}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-2xl">{lang.flag}</span>
+                    <span 
+                      className="text-[10px] font-medium truncate w-full text-center" 
+                      style={{ color: isSelected ? colors.gold.primary : colors.text.primary }}
+                    >
+                      {lang.nativeName.length > 8 ? lang.nativeName.slice(0, 7) + '.' : lang.nativeName}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+            
+            {/* Показываем выбранный язык */}
+            {selectedLang && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 px-3 py-2 rounded-lg flex items-center gap-2"
+                style={{ background: colors.gold.subtle }}
+              >
+                <span className="text-lg">{selectedLang.flag}</span>
+                <span className="text-sm" style={{ color: colors.gold.primary }}>
+                  {selectedLang.nativeName}
+                </span>
+                <span className="text-xs" style={{ color: colors.text.tertiary }}>
+                  • {selectedLang.name}
+                </span>
+              </motion.div>
+            )}
           </div>
-        </div>
 
-        <div>
-          <p className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Тема</p>
-          <div className="flex gap-2">
-            {themes.map((theme) => {
-              const isSelected = formData.theme === theme.id;
-              return (
-                <button
-                  key={theme.id}
-                  onClick={() => {
-                    setFormData(prev => ({ ...prev, theme: theme.id }));
-                    hapticFeedback?.('selection');
-                  }}
-                  className="flex-1 flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
-                  style={isSelected ? glassStyles.cardSelected : glassStyles.card}
-                >
-                  <span className="text-2xl">{theme.icon}</span>
-                  <span className="text-xs" style={{ color: colors.text.primary }}>{theme.name}</span>
-                </button>
-              );
-            })}
+          {/* Тема */}
+          <div>
+            <p className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Тема</p>
+            <div className="flex gap-2">
+              {themes.map((theme) => {
+                const isSelected = formData.theme === theme.id;
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, theme: theme.id }));
+                      hapticFeedback?.('selection');
+                    }}
+                    className="flex-1 flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
+                    style={isSelected ? glassStyles.cardSelected : glassStyles.card}
+                  >
+                    <span className="text-2xl">{theme.icon}</span>
+                    <span className="text-xs" style={{ color: colors.text.primary }}>{theme.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
-    </StepWrapper>
-  );
+      </StepWrapper>
+    );
+  };
 
   // ============ MODULES STEP ============
   const renderModulesStep = () => (
@@ -737,24 +773,31 @@ export default function OnboardingPage() {
         overlayIntensity={stepOverlayIntensity['finance-setup']}
       >
         <div className="space-y-4">
+          {/* Валюты - расширенный список */}
           <div>
             <p className="text-sm font-medium mb-2" style={{ color: colors.text.secondary }}>Валюта</p>
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-4 gap-2">
               {currencies.map((cur) => {
                 const isSelected = formData.currency === cur.code;
                 return (
-                  <button
+                  <motion.button
                     key={cur.code}
                     onClick={() => {
                       setFormData(prev => ({ ...prev, currency: cur.code }));
                       hapticFeedback?.('selection');
                     }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all"
+                    className="flex flex-col items-center gap-1 p-2.5 rounded-lg transition-all"
                     style={isSelected ? glassStyles.cardSelected : glassStyles.card}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <span>{cur.flag}</span>
-                    <span className="text-sm" style={{ color: colors.text.primary }}>{cur.code}</span>
-                  </button>
+                    <span className="text-lg">{cur.flag}</span>
+                    <span 
+                      className="text-xs font-medium" 
+                      style={{ color: isSelected ? colors.gold.primary : colors.text.primary }}
+                    >
+                      {cur.code}
+                    </span>
+                  </motion.button>
                 );
               })}
             </div>
@@ -767,11 +810,16 @@ export default function OnboardingPage() {
             <div className="relative">
               <input
                 type="number"
+                inputMode="numeric"
                 value={formData.initialBalance || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, initialBalance: Number(e.target.value) || 0 }))}
                 placeholder="0"
                 className="w-full h-12 px-4 pr-16 rounded-xl text-base outline-none"
-                style={{ ...(formData.initialBalance ? glassStyles.inputActive : glassStyles.input), color: colors.text.primary }}
+                style={{ 
+                  ...(formData.initialBalance ? glassStyles.inputActive : glassStyles.input), 
+                  color: colors.text.primary,
+                  fontSize: '16px',
+                }}
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm" style={{ color: colors.text.tertiary }}>
                 {selectedCurrency?.symbol}
@@ -786,11 +834,16 @@ export default function OnboardingPage() {
             <div className="relative">
               <input
                 type="number"
+                inputMode="numeric"
                 value={formData.monthlyBudget || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, monthlyBudget: Number(e.target.value) || 0 }))}
                 placeholder="0"
                 className="w-full h-12 px-4 pr-16 rounded-xl text-base outline-none"
-                style={{ ...(formData.monthlyBudget ? glassStyles.inputActive : glassStyles.input), color: colors.text.primary }}
+                style={{ 
+                  ...(formData.monthlyBudget ? glassStyles.inputActive : glassStyles.input), 
+                  color: colors.text.primary,
+                  fontSize: '16px',
+                }}
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm" style={{ color: colors.text.tertiary }}>
                 {selectedCurrency?.symbol}
@@ -1047,6 +1100,7 @@ export default function OnboardingPage() {
   // ============ COMPLETE STEP ============
   const renderCompleteStep = () => {
     const selectedCurrency = currencies.find(c => c.code === formData.currency);
+    const selectedLang = languages.find(l => l.code === formData.language);
     
     return (
       <div className="page-scrollable" style={{ background: colors.bg.primary }}>
@@ -1087,6 +1141,15 @@ export default function OnboardingPage() {
             </p>
 
             <div className="space-y-2 text-left">
+              {/* Язык */}
+              <div className="flex items-center justify-between p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <span className="text-xs" style={{ color: colors.text.tertiary }}>Язык</span>
+                <span className="text-sm flex items-center gap-1" style={{ color: colors.text.primary }}>
+                  {selectedLang?.flag} {selectedLang?.nativeName}
+                </span>
+              </div>
+              
+              {/* Модули */}
               <div className="flex items-center justify-between p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 <span className="text-xs" style={{ color: colors.text.tertiary }}>Модули</span>
                 <div className="flex gap-1">
@@ -1107,6 +1170,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               
+              {/* Валюта */}
               {formData.enabledModules.includes('finance') && (
                 <div className="flex items-center justify-between p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <span className="text-xs" style={{ color: colors.text.tertiary }}>Валюта</span>

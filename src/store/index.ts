@@ -28,9 +28,9 @@ import {
   BottomSheetState,
   EnabledModule,
   ThemeMode,
-  Locale,
 } from '@/types';
 import { generateId, getStartOfMonth, getEndOfMonth, isWithinPeriod } from '@/lib';
+import { type Locale, defaultLocale, supportedLocales, isLocaleSupported } from '@/locales';
 
 // ============================================================================
 // ТИПЫ СТОРА
@@ -156,9 +156,31 @@ interface AppState {
 // ДЕФОЛТНЫЕ ЗНАЧЕНИЯ
 // ============================================================================
 
+// Определение начального языка из Telegram или браузера
+const getInitialLocale = (): Locale => {
+  if (typeof window === 'undefined') return defaultLocale;
+  
+  // Попробовать получить из Telegram
+  try {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.initDataUnsafe?.user?.language_code) {
+      const tgLang = tg.initDataUnsafe.user.language_code;
+      if (isLocaleSupported(tgLang)) return tgLang as Locale;
+    }
+  } catch (e) {}
+  
+  // Из браузера
+  try {
+    const browserLang = navigator.language.split('-')[0];
+    if (isLocaleSupported(browserLang)) return browserLang as Locale;
+  } catch (e) {}
+  
+  return defaultLocale;
+};
+
 const defaultSettings: UserSettings = {
   theme: 'dark',
-  language: 'ru',
+  language: defaultLocale, // Теперь использует defaultLocale из i18n
   notifications: true,
   notificationFrequency: 'important',
   soundEnabled: true,
@@ -242,7 +264,13 @@ export const useStore = create<AppState>()(
         }
       },
       
-      setLanguage: (language) => {
+      // Обновлённый метод для поддержки всех 7 языков
+      setLanguage: (language: Locale) => {
+        // Валидация языка
+        if (!isLocaleSupported(language)) {
+          console.warn(`Unsupported locale: ${language}, falling back to ${defaultLocale}`);
+          language = defaultLocale;
+        }
         get().updateSettings({ language });
       },
       
@@ -322,6 +350,9 @@ export const useStore = create<AppState>()(
           lifestyle, notifications, enabledModules
         } = data;
         
+        // Валидация языка из онбординга
+        const validLanguage = isLocaleSupported(language) ? language as Locale : defaultLocale;
+        
         set((state) => ({
           profile: {
             ...defaultProfile,
@@ -334,7 +365,7 @@ export const useStore = create<AppState>()(
             createdAt: state.profile?.createdAt || new Date().toISOString(),
             settings: {
               ...defaultSettings,
-              language,
+              language: validLanguage,
               theme,
               notificationFrequency: notifications,
               notifications: notifications !== 'off',
@@ -875,7 +906,7 @@ export const selectProfile = (state: AppState) => state.profile;
 export const selectIsOnboarded = (state: AppState) => state.isOnboarded;
 export const selectEnabledModules = (state: AppState) => state.profile?.settings.enabledModules || ['finance'];
 export const selectCurrency = (state: AppState) => state.profile?.finance.currency || 'UZS';
-export const selectLanguage = (state: AppState) => state.profile?.settings.language || 'ru';
+export const selectLanguage = (state: AppState) => state.profile?.settings.language || defaultLocale;
 export const selectTheme = (state: AppState) => state.profile?.settings.theme || 'dark';
 
 export const selectTransactions = (state: AppState) => state.transactions;
@@ -943,5 +974,6 @@ export const useNoteStore = useStore;
 export const useContactStore = useStore;
 export const useUIStore = useStore;
 
-// Экспорт типов для онбординга
-export type { OnboardingFormData, EnabledModule, ThemeMode, Locale };
+// Экспорт типов
+export type { OnboardingFormData, EnabledModule, ThemeMode } from '@/types';
+export type { Locale } from '@/locales';
