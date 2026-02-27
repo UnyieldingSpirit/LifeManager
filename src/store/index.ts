@@ -37,6 +37,7 @@ import { type Locale, defaultLocale, supportedLocales, isLocaleSupported } from 
 // ============================================================================
 
 interface AppState {
+  [x: string]: any;
   // ========== USER ==========
   profile: UserProfile | null;
   isOnboarded: boolean;

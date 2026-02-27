@@ -130,6 +130,7 @@ export interface ChecklistItem {
 // ============================================================================
 
 export interface Event {
+  [x: string]: ReactNode;
   id: string;
   title: string;
   description?: string;
