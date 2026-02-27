@@ -643,6 +643,12 @@ export const useStore = create<AppState>()(
           id: generateId('evt'),
           createdAt: now,
           updatedAt: now,
+          title: '',
+          date: '',
+          allDay: false,
+          type: 'deadline',
+          color: '',
+          isRecurring: false
         };
         set((state) => ({ events: [...state.events, newEvent] }));
         return newEvent;

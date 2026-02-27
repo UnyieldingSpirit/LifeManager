@@ -3,11 +3,13 @@
 // LIFELEDGER - ЕДИНЫЙ ФАЙЛ ТИПОВ
 // ============================================================================
 
+import { ReactNode } from "react";
+
 // ============================================================================
 // БАЗОВЫЕ ТИПЫ
 // ============================================================================
 
-export type Locale = 'ru' | 'en' | 'uz';
+export type Locale = 'ru' | 'uz' | 'kz' | 'kg' | 'tj' | 'tr' | 'en';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type CurrencyCode = 'UZS' | 'RUB' | 'USD' | 'EUR' | 'KZT';
 export type EnabledModule = 'finance' | 'tasks' | 'events' | 'habits' | 'notes' | 'contacts';
@@ -130,7 +132,7 @@ export interface ChecklistItem {
 // ============================================================================
 
 export interface Event {
-  [x: string]: ReactNode;
+  [x: string]: any;
   id: string;
   title: string;
   description?: string;
