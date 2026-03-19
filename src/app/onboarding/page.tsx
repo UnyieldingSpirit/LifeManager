@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, EnabledModule } from '@/store';
 import { useTelegram } from '@/hooks';
+// ─── API ───────────────────────────────────────────────────────────────────
+import { onboardingService, metaService, ApiError } from '@/services';
 
 // ============================================================================
 // ЦВЕТОВАЯ СИСТЕМА
@@ -201,6 +203,9 @@ export default function OnboardingPage() {
   const [introSlide, setIntroSlide] = useState(0);
   const [direction, setDirection] = useState(0);
   const [enabledModules, setEnabledModules] = useState<EnabledModule[]>(['finance']);
+  // ─── API state ────────────────────────────────────────────────────────────
+  const [submitting, setSubmitting] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   // ───────── Навигация ─────────
 
@@ -238,18 +243,19 @@ export default function OnboardingPage() {
     );
   };
 
-  const completeOnboarding = () => {
+  // ─── API: сохранение онбординга ──────────────────────────────────────────
+  const completeOnboarding = async () => {
     hapticFeedback?.('notification', 'success');
+    setSubmitting(true);
+    setApiError('');
 
-    // Сохраняем ТОЛЬКО выбранные модули + smart defaults
-    // Остальное пользователь настроит контекстно на нужных страницах
-    saveOnboardingData({
+    const onboardingFormData = {
       name: user?.first_name || '',
       phone: '',
       birthday: '',
-      language: (navigator.language?.split('-')[0] as 'ru') || 'ru', // Auto-detect
-      theme: 'dark', // Default dark (Carbon Black)
-      currency: 'UZS', // Default по геолокации — будет уточнено на странице финансов
+      language: (navigator.language?.split('-')[0] as 'ru') || 'ru',
+      theme: 'dark' as const,
+      currency: 'UZS',
       initialBalance: 0,
       monthlyBudget: 0,
       salaryDay: 10,
@@ -257,11 +263,57 @@ export default function OnboardingPage() {
       incomeCategories: ['salary'],
       goals: [],
       lifestyle: '',
-      notifications: 'important',
+      notifications: 'important' as const,
       enabledModules,
-    });
+    };
 
-    router.replace('/');
+    try {
+      // Отправляем на сервер
+      const { user: serverUser } = await onboardingService.complete({
+        profile: {
+          name: onboardingFormData.name || undefined,
+        },
+        settings: {
+          language: onboardingFormData.language as 'ru' | 'uz',
+          enabledModules,
+          theme: 'dark',
+        },
+        finance: {
+          currency: 'UZS',
+          initialBalance: 0,
+          monthlyBudget: 0,
+          salaryDay: 10,
+          expenseCategories: onboardingFormData.expenseCategories,
+          incomeCategories: onboardingFormData.incomeCategories,
+        },
+      });
+
+      // Синхронизируем стор с данными сервера
+      saveOnboardingData({
+        ...onboardingFormData,
+        name: serverUser.profile.name || onboardingFormData.name,
+        currency: serverUser.finance.currency || 'UZS',
+        initialBalance: serverUser.finance.initialBalance ?? 0,
+        monthlyBudget: serverUser.finance.monthlyBudget ?? 0,
+        salaryDay: serverUser.finance.salaryDay ?? 10,
+        expenseCategories: serverUser.finance.expenseCategories.length
+          ? serverUser.finance.expenseCategories
+          : onboardingFormData.expenseCategories,
+        incomeCategories: serverUser.finance.incomeCategories.length
+          ? serverUser.finance.incomeCategories
+          : onboardingFormData.incomeCategories,
+      });
+
+      router.replace('/');
+    } catch (e) {
+      // Если API недоступен — сохраняем локально и продолжаем
+      console.warn('[Onboarding] API error, saving locally:', e);
+      setApiError(e instanceof ApiError ? e.message : '');
+      saveOnboardingData(onboardingFormData);
+      router.replace('/');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ───────── Slide Variants ─────────
@@ -281,7 +333,6 @@ export default function OnboardingPage() {
 
     return (
       <div className="page-scrollable" style={{ background: colors.bg.primary }}>
-        {/* Фон */}
         <div
           className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500"
           style={{ backgroundImage: `url(${currentSlide.background})`, zIndex: 0 }}
@@ -291,9 +342,7 @@ export default function OnboardingPage() {
           style={{ background: getOverlayGradient('light'), zIndex: 1 }}
         />
 
-        {/* Контент */}
         <div className="relative min-h-full flex flex-col px-4 pb-24" style={{ zIndex: 2 }}>
-          {/* Skip */}
           {introSlide < introSlides.length - 1 && (
             <div className="pt-4 flex justify-end">
               <button
@@ -306,7 +355,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Slide */}
           <div className="flex-1 flex flex-col items-center justify-center">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -349,7 +397,6 @@ export default function OnboardingPage() {
             </AnimatePresence>
           </div>
 
-          {/* Dots */}
           <div className="flex justify-center gap-2 mb-4">
             {introSlides.map((_, index) => (
               <div
@@ -373,7 +420,6 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* CTA */}
         <div
           className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
           style={{
@@ -408,7 +454,7 @@ export default function OnboardingPage() {
   };
 
   // ========================================================================
-  // STEP 2: MODULES — Выбор модулей (единственный вопрос)
+  // STEP 2: MODULES
   // ========================================================================
 
   const renderModulesStep = () => (
@@ -423,7 +469,6 @@ export default function OnboardingPage() {
       />
 
       <div className="relative min-h-full px-4 pb-24" style={{ zIndex: 2 }}>
-        {/* Header */}
         <div className="pt-4 pb-4">
           <h1
             className="text-xl font-bold"
@@ -439,7 +484,6 @@ export default function OnboardingPage() {
           </p>
         </div>
 
-        {/* Module Grid */}
         <div className="grid grid-cols-2 gap-2">
           {appModules.map((module) => {
             const isSelected = enabledModules.includes(module.id);
@@ -449,9 +493,7 @@ export default function OnboardingPage() {
                 onClick={() => toggleModule(module.id)}
                 className="flex flex-col items-start p-3 rounded-xl transition-all text-left"
                 style={{
-                  background: isSelected
-                    ? `${module.color}15`
-                    : 'rgba(0, 0, 0, 0.3)',
+                  background: isSelected ? `${module.color}15` : 'rgba(0, 0, 0, 0.3)',
                   backdropFilter: 'blur(10px)',
                   border: isSelected
                     ? `1px solid ${module.color}50`
@@ -475,9 +517,7 @@ export default function OnboardingPage() {
                     className="w-5 h-5 rounded-full flex items-center justify-center"
                     style={{
                       background: isSelected ? module.color : 'transparent',
-                      border: isSelected
-                        ? 'none'
-                        : '2px solid rgba(255,255,255,0.3)',
+                      border: isSelected ? 'none' : '2px solid rgba(255,255,255,0.3)',
                     }}
                   >
                     {isSelected && <span className="text-xs">✓</span>}
@@ -499,7 +539,6 @@ export default function OnboardingPage() {
         </p>
       </div>
 
-      {/* CTA */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
         style={{
@@ -512,10 +551,7 @@ export default function OnboardingPage() {
           disabled={enabledModules.length === 0}
           className="w-full h-12 rounded-xl font-semibold transition-all"
           style={{
-            background:
-              enabledModules.length === 0
-                ? 'rgba(255,255,255,0.1)'
-                : gradients.gold,
+            background: enabledModules.length === 0 ? 'rgba(255,255,255,0.1)' : gradients.gold,
             color: enabledModules.length === 0 ? colors.text.tertiary : colors.bg.primary,
             opacity: enabledModules.length === 0 ? 0.5 : 1,
           }}
@@ -528,7 +564,7 @@ export default function OnboardingPage() {
   );
 
   // ========================================================================
-  // STEP 3: COMPLETE — Краткое саммари + запуск
+  // STEP 3: COMPLETE
   // ========================================================================
 
   const renderCompleteStep = () => (
@@ -556,7 +592,6 @@ export default function OnboardingPage() {
             border: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
-          {/* Success icon */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -582,7 +617,6 @@ export default function OnboardingPage() {
             {user?.first_name ? `${user.first_name}, д` : 'Д'}обро пожаловать в LifeLedger
           </p>
 
-          {/* Выбранные модули */}
           <div className="flex flex-wrap justify-center gap-2 mb-4">
             {enabledModules.map((m) => {
               const mod = appModules.find((am) => am.id === m);
@@ -596,12 +630,7 @@ export default function OnboardingPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
                   style={{ background: `${mod.color}15`, border: `1px solid ${mod.color}30` }}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    style={{ color: mod.color }}
-                  >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" style={{ color: mod.color }}>
                     {mod.icon}
                   </svg>
                   <span className="text-xs font-medium" style={{ color: mod.color }}>
@@ -612,14 +641,19 @@ export default function OnboardingPage() {
             })}
           </div>
 
-          {/* Подсказка */}
+          {/* ─── Ошибка API (если была, но продолжили локально) ─── */}
+          {apiError ? (
+            <p className="text-xs mb-2" style={{ color: 'rgba(248,113,113,0.8)' }}>
+              ⚠️ Сохранено локально — {apiError}
+            </p>
+          ) : null}
+
           <p className="text-xs" style={{ color: colors.text.tertiary }}>
             Остальное настроим по ходу дела — без лишних вопросов
           </p>
         </motion.div>
       </div>
 
-      {/* CTA */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
         style={{
@@ -632,7 +666,8 @@ export default function OnboardingPage() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
           onClick={completeOnboarding}
-          className="w-full h-12 rounded-xl font-semibold relative overflow-hidden"
+          disabled={submitting}
+          className="w-full h-12 rounded-xl font-semibold relative overflow-hidden disabled:opacity-60"
           style={{ background: gradients.gold, color: colors.bg.primary }}
           whileTap={{ scale: 0.98 }}
         >
@@ -642,24 +677,18 @@ export default function OnboardingPage() {
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           />
-          <span className="relative z-10">Начать использовать</span>
+          <span className="relative z-10">
+            {submitting ? 'Сохраняем…' : 'Начать использовать'}
+          </span>
         </motion.button>
       </div>
     </div>
   );
 
-  // ========================================================================
-  // RENDER
-  // ========================================================================
-
   switch (step) {
-    case 'intro':
-      return renderIntroStep();
-    case 'modules':
-      return renderModulesStep();
-    case 'complete':
-      return renderCompleteStep();
-    default:
-      return null;
+    case 'intro':    return renderIntroStep();
+    case 'modules':  return renderModulesStep();
+    case 'complete': return renderCompleteStep();
+    default:         return null;
   }
 }

@@ -38,6 +38,10 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import { useStore } from '@/store';
 import { useTelegram } from '@/hooks/useTelegram';
 
+// ─── API: авторизация ────────────────────────────────────────────────────────
+import { authService, setApiToken } from '@/services';
+import { tokenStorage } from '@/lib/api';
+
 // ============================================================================
 // КОНСТАНТЫ КАТЕГОРИЙ
 // ============================================================================
@@ -193,6 +197,66 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   
   const language = profile?.settings?.language || 'ru';
   const currency = profile?.finance?.currency || 'UZS';
+
+  // ============================================================================
+  // AUTH — получаем токен при старте приложения
+  // Запускается один раз при монтировании, не зависит от isReady.
+  //
+  // Приоритет:
+  //   1. Есть токен в localStorage → проверяем через /auth/me → ок, используем
+  //   2. Запущено в Telegram (initData не пустой) → отправляем реальный initData
+  //   3. Браузер + NEXT_PUBLIC_DEV_INIT_DATA задан → используем его (dev)
+  //   4. Браузер без env → testUser (требует DEV_AUTH_BYPASS=true на бэкенде)
+  //
+  // Как получить NEXT_PUBLIC_DEV_INIT_DATA:
+  //   Открой Mini App в Telegram, в консоли выполни:
+  //   console.log(window.Telegram.WebApp.initData)
+  //   Скопируй строку в .env.local:
+  //   NEXT_PUBLIC_DEV_INIT_DATA=query_id=AAH...&user=...&hash=abc123
+  // ============================================================================
+
+  useEffect(() => {
+    const login = async () => {
+      const existing = tokenStorage.get();
+      if (existing) {
+        try {
+          setApiToken(existing);
+          await authService.me();
+          return;
+        } catch {
+        }
+      }
+
+      const tgInitData = typeof window !== 'undefined'
+        ? window.Telegram?.WebApp?.initData
+        : undefined;
+
+      const isTelegram = Boolean(tgInitData && tgInitData.length > 0);
+
+      const devInitData = process.env.NEXT_PUBLIC_DEV_INIT_DATA;
+
+      try {
+        if (isTelegram) {
+          await authService.loginTelegram({ initData: tgInitData });
+        } else if (devInitData) {
+          await authService.loginTelegram({ initData: devInitData });
+} else {
+  await authService.loginTelegram({
+    testUser: {
+      id: 123456789,
+      first_name: 'Test',
+      last_name: 'User',
+      username: 'testuser',
+    },
+  });
+}
+      } catch (e) {
+        console.error('[Auth] Ошибка авторизации:', e);
+      }
+    };
+
+    login();
+  }, []); // пустой массив — один раз при монтировании
 
   // ============================================================================
   // СОСТОЯНИЯ ФОРМ
@@ -811,7 +875,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-task') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Title */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Название задачи' : 'Task Title'} *
@@ -829,8 +892,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Priority */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <FlagIcon className="w-4 h-4" />
@@ -854,8 +915,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Due Date */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CalendarDaysIcon className="w-4 h-4" />
@@ -869,8 +928,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Description */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Описание' : 'Description'}
@@ -888,8 +945,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitTask}
@@ -907,7 +962,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-habit') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Name */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Название привычки' : 'Habit Name'} *
@@ -925,8 +979,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Icon */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <FireIcon className="w-4 h-4" />
@@ -949,8 +1001,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Color */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Цвет' : 'Color'}
@@ -971,8 +1021,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Goal */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Цель в день' : 'Daily Goal'}
@@ -988,8 +1036,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitHabit}
@@ -1007,7 +1053,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-note') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Title */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Заголовок' : 'Title'}
@@ -1025,8 +1070,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Content */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Текст заметки' : 'Note Content'} *
@@ -1044,8 +1087,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Pin */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={() => { hapticFeedback?.('selection'); setNotePinned(!notePinned); }}
@@ -1068,8 +1109,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               />
             </div>
           </motion.button>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitNote}
@@ -1087,7 +1126,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-contact') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Name */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <UserIcon className="w-4 h-4" />
@@ -1106,8 +1144,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Phone */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <PhoneIcon className="w-4 h-4" />
@@ -1123,8 +1159,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Email */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <EnvelopeIcon className="w-4 h-4" />
@@ -1140,8 +1174,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Group */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Группа' : 'Group'}
@@ -1169,8 +1201,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Birthday */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CalendarDaysIcon className="w-4 h-4" />
@@ -1184,8 +1214,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitContact}
@@ -1203,7 +1231,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-event') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Title */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Название события' : 'Event Title'} *
@@ -1221,8 +1248,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Type */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Тип события' : 'Event Type'}
@@ -1250,8 +1275,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Date */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CalendarDaysIcon className="w-4 h-4" />
@@ -1265,8 +1288,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Time */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <ClockIcon className="w-4 h-4" />
@@ -1281,8 +1302,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitEvent}
@@ -1300,7 +1319,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-goal') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Name */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Название цели' : 'Goal Name'} *
@@ -1318,8 +1336,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Icon */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Иконка' : 'Icon'}
@@ -1341,8 +1357,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Target Amount */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CurrencyDollarIcon className="w-4 h-4" />
@@ -1364,8 +1378,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               </span>
             </div>
           </div>
-          
-          {/* Deadline */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CalendarDaysIcon className="w-4 h-4" />
@@ -1379,8 +1391,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Priority */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Приоритет' : 'Priority'}
@@ -1407,8 +1417,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               })}
             </div>
           </div>
-          
-          {/* Color */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Цвет' : 'Color'}
@@ -1429,8 +1437,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitGoal}
@@ -1448,7 +1454,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     if (content === 'add-debt') {
       return (
         <div className="space-y-5 pb-6">
-          {/* Name */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Название' : 'Name'} *
@@ -1466,8 +1471,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
-          
-          {/* Type */}
           <div>
             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
               {language === 'ru' ? 'Тип' : 'Type'}
@@ -1495,8 +1498,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               ))}
             </div>
           </div>
-          
-          {/* Amount */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <BanknotesIcon className="w-4 h-4" />
@@ -1518,8 +1519,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               </span>
             </div>
           </div>
-          
-          {/* Contact Name (for lent/borrowed) */}
           {(debtType === 'lent' || debtType === 'borrowed') && (
             <div>
               <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
@@ -1542,8 +1541,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               />
             </div>
           )}
-          
-          {/* Due Date */}
           <div>
             <label className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <CalendarDaysIcon className="w-4 h-4" />
@@ -1557,8 +1554,6 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
               style={{ ...inputStyle, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', colorScheme: 'dark' }}
             />
           </div>
-          
-          {/* Submit */}
           <motion.button 
             whileTap={{ scale: 0.98 }} 
             onClick={handleSubmitDebt}
