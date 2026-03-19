@@ -21,6 +21,8 @@ import {
 import { useStore } from '@/store';
 import { useTelegram, useTranslation, useFormatters, useScrollLock } from '@/hooks';
 import { getAvailableLanguages, type Locale } from '@/locales';
+// ─── API ─────────────────────────────────────────────────────────────────────
+import { changeLanguage, updateProfileSettings, updateProfileFinance } from '@/store/apiActions';
 
 // ============================================================================
 // CURRENCY OPTIONS
@@ -364,22 +366,39 @@ export default function ProfilePage() {
   const [showCurrencySheet, setShowCurrencySheet] = useState(false);
   
   // Handlers
-  const handleLanguageChange = (newLocale: Locale) => {
+  const handleLanguageChange = async (newLocale: Locale) => {
+    // 1. Применяем локально сразу (optimistic)
     setLanguage(newLocale);
     setShowLangSheet(false);
-    addToast({ type: 'success', message: t('messages.saved') });
+    try {
+      // 2. Сохраняем на сервере + перезагружаем bootstrap
+      await changeLanguage(newLocale as any);
+      addToast({ type: 'success', message: t('messages.saved') });
+    } catch {
+      addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
+    }
   };
   
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = async (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
     setShowThemeSheet(false);
-    addToast({ type: 'success', message: t('messages.saved') });
+    try {
+      await updateProfileSettings({ theme: newTheme });
+      addToast({ type: 'success', message: t('messages.saved') });
+    } catch {
+      addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
+    }
   };
   
-  const handleCurrencyChange = (newCurrency: string) => {
+  const handleCurrencyChange = async (newCurrency: string) => {
     updateFinance({ currency: newCurrency });
     setShowCurrencySheet(false);
-    addToast({ type: 'success', message: t('messages.saved') });
+    try {
+      await updateProfileFinance({ currency: newCurrency });
+      addToast({ type: 'success', message: t('messages.saved') });
+    } catch {
+      addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
+    }
   };
   
   const handleReset = () => {

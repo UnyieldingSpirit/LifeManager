@@ -39,7 +39,8 @@ import { useStore } from '@/store';
 import { useTelegram } from '@/hooks/useTelegram';
 
 // ─── API: авторизация ────────────────────────────────────────────────────────
-import { authService, setApiToken } from '@/services';
+import { authService, setApiToken, transactionService, goalService } from '@/services';
+import { createTransactionApi, createGoalApi, contributeToGoalApi } from '@/store/apiActions';
 import { tokenStorage } from '@/lib/api';
 
 // ============================================================================
@@ -427,7 +428,7 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
   // ОБРАБОТЧИКИ ФОРМ
   // ============================================================================
   
-  const handleSubmitTransaction = () => {
+  const handleSubmitTransaction = async () => {
     const numAmount = parseAmount(txAmount);
     
     if (!numAmount || numAmount <= 0) {
@@ -444,25 +445,34 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     
     hapticFeedback?.('notification', 'success');
     
-    // Если описание пустое - используем название категории
     const description = txDescription.trim() || getCategoryLabel(txCategory, txType);
-    
-    addTransaction({
-      type: txType,
-      amount: numAmount,
-      category: txCategory,
-      description,
-      date: txDate,
-      isRecurring: false,
-    });
-    
-    addToast({ 
-      type: 'success', 
-      message: txType === 'expense' 
-        ? (language === 'ru' ? 'Расход добавлен' : 'Expense added') 
-        : (language === 'ru' ? 'Доход добавлен' : 'Income added') 
-    });
+
+    // Закрываем сразу (optimistic UX)
     closeBottomSheet();
+    
+    try {
+      // Вызываем API: optimistic update внутри createTransactionApi
+      await createTransactionApi({
+        type:        txType,
+        amount:      numAmount,
+        category:    txCategory,
+        description,
+        date:        txDate,
+        isRecurring: false,
+      });
+
+      addToast({ 
+        type: 'success', 
+        message: txType === 'expense' 
+          ? (language === 'ru' ? 'Расход добавлен' : 'Expense added') 
+          : (language === 'ru' ? 'Доход добавлен' : 'Income added') 
+      });
+    } catch {
+      addToast({ 
+        type: 'error', 
+        message: language === 'ru' ? 'Не удалось сохранить транзакцию' : 'Failed to save transaction'
+      });
+    }
   };
   
   const handleSubmitTask = () => {
@@ -575,7 +585,7 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     closeBottomSheet();
   };
   
-  const handleSubmitGoal = () => {
+  const handleSubmitGoal = async () => {
     const numTarget = parseAmount(goalTarget);
     
     if (!goalName.trim()) {
@@ -591,19 +601,22 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     }
     
     hapticFeedback?.('notification', 'success');
-    addGoal({
-      name: goalName.trim(),
-      icon: goalIcon,
-      color: goalColor,
-      targetAmount: numTarget,
-      currentAmount: 0,
-      deadline: goalDeadline || undefined,
-      priority: goalPriority,
-      linkedTransactions: [],
-    });
-    
-    addToast({ type: 'success', message: language === 'ru' ? 'Цель добавлена' : 'Goal added' });
     closeBottomSheet();
+
+    try {
+      await createGoalApi({
+        name:         goalName.trim(),
+        icon:         goalIcon,
+        color:        goalColor,
+        targetAmount: numTarget,
+        currentAmount: 0,
+        deadline:     goalDeadline || undefined,
+        priority:     goalPriority,
+      });
+      addToast({ type: 'success', message: language === 'ru' ? 'Цель добавлена' : 'Goal added' });
+    } catch {
+      addToast({ type: 'error', message: language === 'ru' ? 'Не удалось создать цель' : 'Failed to create goal' });
+    }
   };
   
   const handleSubmitDebt = () => {

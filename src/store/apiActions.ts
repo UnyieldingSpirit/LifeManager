@@ -1,13 +1,15 @@
 // src/store/apiActions.ts
 // ============================================================================
-// LIFELEDGER — ASYNC API ACTIONS ДЛЯ ZUSTAND СТОРА
+// LIFELEDGER — ASYNC API ACTIONS
 // ============================================================================
-// Подключается к основному store/index.ts как дополнительный слой.
-// Паттерн: вызов API → обновление стора → return данных.
-// При ошибке — пробрасывает ApiError, который ловится в компоненте.
+// Правила:
+//   1. НЕТ optimistic UI для создания — только после ответа сервера
+//   2. После любого CUD (create/update/delete) → sync с сервера (источник правды)
+//   3. setTransactions/setGoals — атомарная замена (один set, без циклов)
+//   4. Баланс берётся из summary сервера, не считается вручную
 // ============================================================================
 
-import { useAppStore } from './index'; // твой основной стор
+import { useStore } from './index';
 import {
   authService,
   onboardingService,
@@ -18,8 +20,8 @@ import {
   ApiError,
   setApiToken,
   clearApiToken,
-  tokenStorage,
 } from '@/services';
+import { tokenStorage } from '@/lib/api';
 import type {
   CreateTransactionPayload,
   UpdateTransactionPayload,
@@ -27,71 +29,29 @@ import type {
   UpdateGoalPayload,
   OnboardingPayload,
   Lang,
+  UserDto,
 } from '@/services/types';
 
-// ─── ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ─────────────────────────────────────────────────
+// ─── УТИЛИТА: маппинг UserDto → стор ─────────────────────────────────────────
 
-/**
- * Вызывается один раз при старте приложения (в layout.tsx или providers.tsx).
- * Последовательность:
- *   1. Загружаем meta/bootstrap (справочники для UI)
- *   2. Аутентифицируемся через Telegram
- *   3. Если isOnboarded=false → редирект на онбординг
- *   4. Если isOnboarded=true → загружаем профиль + данные
- */
-export async function initApp(): Promise<void> {
-  const store = useAppStore.getState();
-
-  try {
-    // 1. Bootstrap справочников (не требует auth)
-    const lang = store.profile?.settings?.language ?? 'ru';
-    const bootstrap = await metaService.bootstrap(lang as Lang);
-    store.setBootstrap?.(bootstrap); // если в сторе есть такой экшн
-
-    // 2. Авторизация
-    const existingToken = tokenStorage.get();
-
-    if (existingToken) {
-      // Уже есть токен — проверяем через /auth/me
-      try {
-        const { user } = await authService.me();
-        store.setUser?.(user);
-      } catch (e) {
-        if (e instanceof ApiError && e.code === 'UNAUTHORIZED') {
-          // Токен протух → переавторизуемся
-          await loginViaTelegram();
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      await loginViaTelegram();
-    }
-
-    // 3. Проверяем онбординг
-    const currentUser = useAppStore.getState().profile;
-    if (!currentUser?.isOnboarded) {
-      // Редирект обрабатывается в компоненте через useEffect + router.push
-      return;
-    }
-
-    // 4. Загружаем рабочие данные параллельно
-    await Promise.all([
-      syncTransactions(),
-      syncGoals(),
-    ]);
-  } catch (error) {
-    console.error('[initApp] Ошибка инициализации:', error);
-    throw error;
-  }
+export function applyUserToStore(user: UserDto) {
+  const store = useStore.getState();
+  store.updateProfile({
+    id:        user.id,
+    name:      user.profile.name,
+    phone:     user.profile.phone,
+    birthday:  user.profile.birthday,
+    lifestyle: user.profile.lifestyle as any,
+  });
+  store.updateSettings(user.settings as any);
+  store.updateFinance(user.finance);
+  store.updateStats(user.stats);
+  store.setOnboarded(user.isOnboarded);
 }
 
-// ─── AUTH ACTIONS ─────────────────────────────────────────────────────────────
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
 
 export async function loginViaTelegram(): Promise<void> {
-  const store = useAppStore.getState();
-
-  // Получаем initData из Telegram WebApp
   const initData = typeof window !== 'undefined'
     ? window.Telegram?.WebApp?.initData
     : undefined;
@@ -103,143 +63,158 @@ export async function loginViaTelegram(): Promise<void> {
   );
 
   setApiToken(result.token);
-  store.setUser?.(result.user);
+  applyUserToStore(result.user);
 }
 
 export async function logout(): Promise<void> {
-  const store = useAppStore.getState();
   await authService.logout();
   clearApiToken();
-  store.resetAll?.();
+  useStore.getState().resetStore();
 }
 
-// ─── ONBOARDING ACTIONS ───────────────────────────────────────────────────────
+// ─── ONBOARDING ───────────────────────────────────────────────────────────────
 
 export async function completeOnboarding(payload: OnboardingPayload): Promise<void> {
   const { user } = await onboardingService.complete(payload);
-  useAppStore.getState().setUser?.(user);
+  applyUserToStore(user);
 }
 
-// ─── PROFILE ACTIONS ──────────────────────────────────────────────────────────
+// ─── PROFILE ──────────────────────────────────────────────────────────────────
 
-export async function updateSettings(
-  settings: Partial<Parameters<typeof profileService.updateSettings>[0]>
+export async function updateProfileSettings(
+  settings: Parameters<typeof profileService.updateSettings>[0]
 ): Promise<void> {
   const { settings: updated } = await profileService.updateSettings(settings);
-  useAppStore.getState().updateSettings?.(updated);
+  useStore.getState().updateSettings(updated as any);
+}
+
+export async function updateProfileFinance(
+  finance: Parameters<typeof profileService.updateFinance>[0]
+): Promise<void> {
+  const { finance: updated } = await profileService.updateFinance(finance);
+  useStore.getState().updateFinance(updated);
 }
 
 export async function changeLanguage(language: Lang): Promise<void> {
-  const store = useAppStore.getState();
-
-  // 1. Меняем язык на сервере
   await profileService.updateLanguage(language);
-  store.setLanguage?.(language);
-
-  // 2. Перезагружаем справочники для нового языка
-  const bootstrap = await metaService.bootstrap(language);
-  store.setBootstrap?.(bootstrap);
+  useStore.getState().setLanguage(language as any);
+  try { await metaService.bootstrap(language); } catch { /* ok */ }
 }
 
-// ─── TRANSACTION ACTIONS ──────────────────────────────────────────────────────
+// ─── TRANSACTIONS ─────────────────────────────────────────────────────────────
 
 /**
- * Синхронизирует транзакции с API → записывает в стор.
- * Вызывать при загрузке страницы Finance и после изменений.
+ * Загружает/синхронизирует транзакции с сервера → стор.
+ * Атомарная замена через setTransactions — один ре-рендер.
  */
 export async function syncTransactions(
   filters?: Parameters<typeof transactionService.list>[0]
 ): Promise<void> {
   const result = await transactionService.list(filters);
-  useAppStore.getState().setTransactions?.(result.items);
-  useAppStore.getState().setTransactionSummary?.(result.summary);
+  const store  = useStore.getState();
+
+  // Один вызов set() — один ре-рендер, никаких дублей
+  store.setTransactions(result.items as any);
+
+  if (result.summary) {
+    store.updateStats({
+      currentBalance: result.summary.balance,
+      totalIncome:    result.summary.income,
+      totalExpenses:  result.summary.expenses,
+    });
+  }
 }
 
 /**
- * Создать транзакцию с optimistic UI.
- * Сразу обновляем стор (оптимистично), потом подтверждаем/откатываем.
+ * Создать транзакцию.
+ * НЕТ optimistic UI — ждём ответа сервера, потом синхронизируем список.
+ * Это исключает дубли.
  */
-export async function createTransaction(payload: CreateTransactionPayload): Promise<void> {
-  const store = useAppStore.getState();
-
-  // Optimistic update: временная транзакция с placeholder ID
-  const tempId = `temp_${Date.now()}`;
-  const optimistic = {
-    ...payload,
-    id: tempId,
-    userId: store.profile?.id ?? '',
-    isRecurring: payload.isRecurring ?? false,
-    tags: payload.tags ?? [],
-    notes: payload.notes ?? '',
-    description: payload.description ?? '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  store.addTransactionOptimistic?.(optimistic);
-
-  try {
-    const real = await transactionService.create(payload);
-    // Заменяем временную транзакцию реальной
-    store.replaceTransaction?.(tempId, real);
-    // Обновляем статистику (баланс)
-    await syncTransactions();
-  } catch (error) {
-    // Откат optimistic update
-    store.removeTransaction?.(tempId);
-    throw error;
-  }
+export async function createTransactionApi(payload: CreateTransactionPayload): Promise<void> {
+  await transactionService.create(payload);
+  // После создания — берём свежий список с сервера (источник правды)
+  await syncTransactions({ limit: 200 });
 }
 
-export async function updateTransaction(
-  id: string,
-  payload: UpdateTransactionPayload
-): Promise<void> {
-  const updated = await transactionService.update(id, payload);
-  useAppStore.getState().updateTransactionInStore?.(id, updated);
-  await syncTransactions();
-}
+/**
+ * Удалить транзакцию.
+ * Optimistic: убираем из UI сразу, при ошибке — восстанавливаем sync.
+ */
+export async function deleteTransactionApi(id: string): Promise<void> {
+  const store = useStore.getState();
 
-export async function deleteTransaction(id: string): Promise<void> {
-  // Optimistic: сразу убираем из UI
-  useAppStore.getState().removeTransaction?.(id);
+  // Optimistic: убираем сразу для мгновенного отклика
+  const backup = store.transactions.find(t => t.id === id);
+  store.deleteTransaction(id);
+
   try {
     await transactionService.delete(id);
-    await syncTransactions();
+    // После удаления синхронизируем summary (баланс)
+    const result = await transactionService.list({ limit: 200 });
+    store.setTransactions(result.items as any);
+    if (result.summary) {
+      store.updateStats({
+        currentBalance: result.summary.balance,
+        totalIncome:    result.summary.income,
+        totalExpenses:  result.summary.expenses,
+      });
+    }
   } catch (error) {
-    // Откат: перезагружаем список
-    await syncTransactions();
+    // Откат: возвращаем удалённую запись
+    if (backup) {
+      store.addTransaction(backup as any);
+    }
     throw error;
   }
 }
 
-// ─── GOAL ACTIONS ─────────────────────────────────────────────────────────────
+// ─── GOALS ────────────────────────────────────────────────────────────────────
 
+/**
+ * Загружает/синхронизирует цели с сервера → стор.
+ * Атомарная замена через setGoals.
+ */
 export async function syncGoals(): Promise<void> {
   const goals = await goalService.list();
-  useAppStore.getState().setGoals?.(goals);
+  useStore.getState().setGoals(goals as any);
 }
 
-export async function createGoal(payload: CreateGoalPayload): Promise<void> {
-  const goal = await goalService.create(payload);
-  useAppStore.getState().addGoal?.(goal);
+/**
+ * Создать цель — ждём сервер, потом синхронизируем.
+ */
+export async function createGoalApi(payload: CreateGoalPayload): Promise<void> {
+  await goalService.create(payload);
+  await syncGoals();
 }
 
-export async function updateGoal(id: string, payload: UpdateGoalPayload): Promise<void> {
+export async function updateGoalApi(id: string, payload: UpdateGoalPayload): Promise<void> {
   const updated = await goalService.update(id, payload);
-  useAppStore.getState().updateGoalInStore?.(id, updated);
+  useStore.getState().updateGoal(id, updated as any);
 }
 
-export async function deleteGoal(id: string): Promise<void> {
-  useAppStore.getState().removeGoal?.(id); // optimistic
+/**
+ * Удалить цель — optimistic, при ошибке sync.
+ */
+export async function deleteGoalApi(id: string): Promise<void> {
+  const store  = useStore.getState();
+  const backup = store.goals.find(g => g.id === id);
+  store.deleteGoal(id); // optimistic
+
   try {
     await goalService.delete(id);
-  } catch {
-    await syncGoals(); // откат
-    throw new Error('Не удалось удалить цель');
+  } catch (error) {
+    if (backup) store.addGoal(backup as any); // откат
+    throw error;
   }
 }
 
-export async function contributeToGoal(id: string, amount: number): Promise<void> {
+/**
+ * Пополнить цель — сервер возвращает обновлённую цель, применяем точечно.
+ */
+export async function contributeToGoalApi(id: string, amount: number): Promise<void> {
   const updated = await goalService.contribute(id, amount);
-  useAppStore.getState().updateGoalInStore?.(id, updated);
+  useStore.getState().updateGoal(id, updated as any);
 }
+
+// Re-exports
+export { ApiError, setApiToken, clearApiToken, tokenStorage };

@@ -65,6 +65,7 @@ interface AppState {
   addTransaction: (input: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => Transaction;
   updateTransaction: (id: string, updates: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
+  setTransactions: (items: Transaction[]) => void; // ← replace all, for API sync
   setTransactionFilters: (filters: Partial<TransactionFilters>) => void;
   clearTransactionFilters: () => void;
   
@@ -79,6 +80,7 @@ interface AppState {
   addGoal: (input: Omit<SavingGoal, 'id' | 'createdAt' | 'updatedAt'>) => SavingGoal;
   updateGoal: (id: string, updates: Partial<SavingGoal>) => void;
   deleteGoal: (id: string) => void;
+  setGoals: (items: SavingGoal[]) => void; // ← replace all, for API sync
   addToGoal: (id: string, amount: number) => void;
   
   // ========== DEBTS ==========
@@ -458,6 +460,10 @@ export const useStore = create<AppState>()(
           transactions: state.transactions.filter((t) => t.id !== id),
         }));
       },
+
+      setTransactions: (items) => {
+        set({ transactions: items });
+      },
       
       setTransactionFilters: (filters) => {
         set((state) => ({
@@ -528,6 +534,10 @@ export const useStore = create<AppState>()(
       
       deleteGoal: (id) => {
         set((state) => ({ goals: state.goals.filter((g) => g.id !== id) }));
+      },
+
+      setGoals: (items) => {
+        set({ goals: items });
       },
       
       addToGoal: (id, amount) => {

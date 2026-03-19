@@ -262,7 +262,7 @@ export default function OnboardingPage() {
       expenseCategories: ['food', 'transport', 'housing', 'utilities', 'entertainment'],
       incomeCategories: ['salary'],
       goals: [],
-      lifestyle: '',
+      lifestyle: '' as '' | 'single' | 'couple' | 'family' | 'roommates',
       notifications: 'important' as const,
       enabledModules,
     };
@@ -291,6 +291,7 @@ export default function OnboardingPage() {
       // Синхронизируем стор с данными сервера
       saveOnboardingData({
         ...onboardingFormData,
+        lifestyle: (serverUser.profile.lifestyle || onboardingFormData.lifestyle || '') as '' | 'single' | 'couple' | 'family' | 'roommates',
         name: serverUser.profile.name || onboardingFormData.name,
         currency: serverUser.finance.currency || 'UZS',
         initialBalance: serverUser.finance.initialBalance ?? 0,
