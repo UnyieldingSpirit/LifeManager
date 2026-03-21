@@ -56,59 +56,49 @@ const introSlides = [
     subtitle: 'Ваш персональный ассистент',
     description: 'Всё для управления жизнью в одном приложении',
     background: '/onboarding-welcome.jpg',
+    accent: colors.gold.primary,
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
-    accent: colors.gold.primary,
   },
   {
     id: 2,
     title: 'Финансы под контролем',
-    subtitle: 'Доходы • Расходы • Бюджет',
-    description: 'Отслеживайте каждую транзакцию и достигайте финансовых целей',
-    background: '/onboarding-analytics.jpg',
+    subtitle: 'Доходы, расходы, цели',
+    description: 'Следите за балансом, планируйте бюджет и достигайте целей',
+    background: '/onboarding-finance.jpg',
+    accent: colors.modules.finance,
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
-        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
-    accent: colors.modules.finance,
   },
   {
     id: 3,
-    title: 'Задачи и привычки',
-    subtitle: 'Проекты • Чек-листы • Стрики',
-    description: 'Организуйте дела и формируйте полезные привычки',
-    background: '/onboarding-tasks.jpg',
+    title: 'Всё в одном месте',
+    subtitle: 'Единая экосистема',
+    description: 'Задачи, привычки, контакты и события — всё связано между собой',
+    background: '/onboarding-all.jpg',
+    accent: colors.gold.primary,
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
-        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
-    accent: colors.modules.tasks,
-  },
-  {
-    id: 4,
-    title: 'Календарь и заметки',
-    subtitle: 'События • Контакты • Записи',
-    description: 'Храните всё важное в одном месте',
-    background: '/onboarding-modules.jpg',
-    icon: (
-      <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
-        <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-    accent: colors.modules.events,
   },
 ];
 
 // ============================================================================
 // ДАННЫЕ — МОДУЛИ
 // ============================================================================
+
+// Модули, заблокированные в текущей версии (будут доступны позже)
+const LOCKED_MODULES: EnabledModule[] = ['tasks', 'events', 'habits', 'notes', 'contacts'];
 
 const appModules: Array<{
   id: EnabledModule;
@@ -182,6 +172,18 @@ const getOverlayGradient = (intensity: 'light' | 'medium') => {
 };
 
 // ============================================================================
+// LOCK ICON
+// ============================================================================
+function LockIcon() {
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="11" width="18" height="11" rx="2" stroke="#525252" strokeWidth="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4" stroke="#525252" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ============================================================================
 // ONBOARDING: 3 шага — Intro Slides → Модули → Готово
 // ============================================================================
 
@@ -202,8 +204,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<OnboardingStep>('intro');
   const [introSlide, setIntroSlide] = useState(0);
   const [direction, setDirection] = useState(0);
+  // finance — обязательный, всегда включён
   const [enabledModules, setEnabledModules] = useState<EnabledModule[]>(['finance']);
-  // ─── API state ────────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
 
@@ -234,7 +236,10 @@ export default function OnboardingPage() {
     goToModules();
   };
 
+  // finance нельзя снять; locked модули не переключаются
   const toggleModule = (moduleId: EnabledModule) => {
+    if (moduleId === 'finance') return;
+    if (LOCKED_MODULES.includes(moduleId)) return;
     hapticFeedback?.('selection');
     setEnabledModules((prev) =>
       prev.includes(moduleId)
@@ -268,7 +273,6 @@ export default function OnboardingPage() {
     };
 
     try {
-      // Отправляем на сервер
       const { user: serverUser } = await onboardingService.complete({
         profile: {
           name: onboardingFormData.name || undefined,
@@ -288,7 +292,6 @@ export default function OnboardingPage() {
         },
       });
 
-      // Синхронизируем стор с данными сервера
       saveOnboardingData({
         ...onboardingFormData,
         lifestyle: (serverUser.profile.lifestyle || onboardingFormData.lifestyle || '') as '' | 'single' | 'couple' | 'family' | 'roommates',
@@ -307,7 +310,6 @@ export default function OnboardingPage() {
 
       router.replace('/');
     } catch (e) {
-      // Если API недоступен — сохраняем локально и продолжаем
       console.warn('[Onboarding] API error, saving locally:', e);
       setApiError(e instanceof ApiError ? e.message : '');
       saveOnboardingData(onboardingFormData);
@@ -326,7 +328,7 @@ export default function OnboardingPage() {
   };
 
   // ========================================================================
-  // STEP 1: INTRO — Showcase слайды (что умеет приложение)
+  // STEP 1: INTRO
   // ========================================================================
 
   const renderIntroStep = () => {
@@ -349,14 +351,17 @@ export default function OnboardingPage() {
               <button
                 onClick={handleIntroSkip}
                 className="text-sm px-3 py-1.5 rounded-lg"
-                style={{ color: colors.text.secondary, background: 'rgba(0,0,0,0.3)' }}
+                style={{
+                  color: colors.text.secondary,
+                  background: 'rgba(255,255,255,0.08)',
+                }}
               >
                 Пропустить
               </button>
             </div>
           )}
 
-          <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="flex-1 flex flex-col items-center justify-center text-center pt-8">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={introSlide}
@@ -365,40 +370,44 @@ export default function OnboardingPage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="flex flex-col items-center text-center p-6 rounded-2xl max-w-sm"
-                style={{
-                  background: 'rgba(10, 10, 10, 0.4)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center"
               >
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4"
+                <div
+                  className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6"
                   style={{
                     background: `${currentSlide.accent}20`,
+                    border: `1px solid ${currentSlide.accent}40`,
                     color: currentSlide.accent,
                   }}
                 >
                   {currentSlide.icon}
-                </motion.div>
+                </div>
 
-                <h1 className="text-2xl font-bold mb-1" style={{ color: colors.text.primary }}>
+                <h1
+                  className="text-3xl font-bold mb-2"
+                  style={{ color: colors.text.primary, textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}
+                >
                   {currentSlide.title}
                 </h1>
-                <p className="text-base mb-2" style={{ color: currentSlide.accent }}>
+                <p
+                  className="text-lg font-medium mb-3"
+                  style={{ color: currentSlide.accent, textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+                >
                   {currentSlide.subtitle}
                 </p>
-                <p className="text-sm" style={{ color: colors.text.secondary }}>
+                <p
+                  className="text-sm leading-relaxed max-w-xs"
+                  style={{ color: colors.text.secondary, textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}
+                >
                   {currentSlide.description}
                 </p>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          <div className="flex justify-center gap-2 mb-4">
+          {/* Progress dots */}
+          <div className="flex justify-center gap-2 pb-4">
             {introSlides.map((_, index) => (
               <div
                 key={index}
@@ -487,76 +496,118 @@ export default function OnboardingPage() {
 
         <div className="grid grid-cols-2 gap-2">
           {appModules.map((module) => {
-            const isSelected = enabledModules.includes(module.id);
+            const isLocked = LOCKED_MODULES.includes(module.id);
+            const isFinance = module.id === 'finance';
+            // Finance всегда selected; locked — никогда
+            const isSelected = !isLocked && enabledModules.includes(module.id);
+
             return (
               <motion.button
                 key={module.id}
-                onClick={() => toggleModule(module.id)}
-                className="flex flex-col items-start p-3 rounded-xl transition-all text-left"
+                onClick={() => !isLocked && toggleModule(module.id)}
+                className="flex flex-col items-start p-3 rounded-xl transition-all text-left relative"
                 style={{
-                  background: isSelected ? `${module.color}15` : 'rgba(0, 0, 0, 0.3)',
+                  background: isLocked
+                    ? 'rgba(0, 0, 0, 0.15)'
+                    : isSelected
+                    ? `${module.color}15`
+                    : 'rgba(0, 0, 0, 0.3)',
                   backdropFilter: 'blur(10px)',
-                  border: isSelected
+                  border: isLocked
+                    ? '1px solid rgba(255, 255, 255, 0.04)'
+                    : isSelected
                     ? `1px solid ${module.color}50`
                     : '1px solid rgba(255, 255, 255, 0.1)',
+                  opacity: isLocked ? 0.42 : 1,
+                  cursor: isLocked ? 'default' : 'pointer',
                 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={isLocked ? {} : { scale: 0.98 }}
               >
+                {/* Icon row */}
                 <div className="flex items-center justify-between w-full mb-2">
                   <div
                     className="w-9 h-9 rounded-lg flex items-center justify-center"
                     style={{
-                      background: isSelected ? module.color : `${module.color}30`,
-                      color: isSelected ? '#000' : module.color,
+                      background: isLocked
+                        ? 'rgba(255,255,255,0.05)'
+                        : isSelected
+                        ? module.color
+                        : `${module.color}30`,
+                      color: isLocked ? '#404040' : isSelected ? '#000' : module.color,
                     }}
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                       {module.icon}
                     </svg>
                   </div>
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center"
-                    style={{
-                      background: isSelected ? module.color : 'transparent',
-                      border: isSelected ? 'none' : '2px solid rgba(255,255,255,0.3)',
-                    }}
-                  >
-                    {isSelected && <span className="text-xs">✓</span>}
-                  </div>
+
+                  {/* Lock icon for locked modules, checkbox for others */}
+                  {isLocked ? (
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(255,255,255,0.06)' }}
+                    >
+                      <LockIcon />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                      style={{
+                        background: isSelected ? module.color : 'transparent',
+                        border: isSelected
+                          ? `2px solid ${module.color}`
+                          : '2px solid rgba(255, 255, 255, 0.3)',
+                      }}
+                    >
+                      {isSelected && (
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M5 13l4 4L19 7"
+                            stroke="#000"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm font-medium" style={{ color: colors.text.primary }}>
+
+                <p
+                  className="text-sm font-semibold mb-0.5"
+                  style={{ color: isLocked ? '#404040' : colors.text.primary }}
+                >
                   {module.name}
                 </p>
-                <p className="text-[10px]" style={{ color: colors.text.tertiary }}>
-                  {module.examples}
+                <p
+                  className="text-xs"
+                  style={{ color: isLocked ? '#303030' : colors.text.tertiary }}
+                >
+                  {isLocked ? 'Скоро' : module.description}
                 </p>
               </motion.button>
             );
           })}
         </div>
-
-        <p className="text-xs text-center mt-3" style={{ color: colors.text.tertiary }}>
-          Можно изменить позже в настройках
-        </p>
       </div>
 
+      {/* CTA */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
         style={{
-          background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0.6) 60%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 100%)',
           zIndex: 10,
         }}
       >
         <motion.button
           onClick={goToComplete}
-          disabled={enabledModules.length === 0}
-          className="w-full h-12 rounded-xl font-semibold transition-all"
+          className="w-full h-12 rounded-xl font-semibold"
           style={{
-            background: enabledModules.length === 0 ? 'rgba(255,255,255,0.1)' : gradients.gold,
-            color: enabledModules.length === 0 ? colors.text.tertiary : colors.bg.primary,
-            opacity: enabledModules.length === 0 ? 0.5 : 1,
+            background: gradients.gold,
+            color: colors.bg.primary,
           }}
-          whileTap={enabledModules.length === 0 ? {} : { scale: 0.98 }}
+          whileTap={{ scale: 0.98 }}
         >
           Продолжить
         </motion.button>
@@ -615,72 +666,65 @@ export default function OnboardingPage() {
             Всё готово!
           </h1>
           <p className="text-sm mb-4" style={{ color: colors.text.secondary }}>
-            {user?.first_name ? `${user.first_name}, д` : 'Д'}обро пожаловать в LifeLedger
+            {user?.first_name
+              ? `Добро пожаловать, ${user.first_name}!`
+              : 'Добро пожаловать в LifeLedger!'}
           </p>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {enabledModules.map((m) => {
-              const mod = appModules.find((am) => am.id === m);
+          <div className="flex flex-wrap gap-1.5 justify-center mb-4">
+            {enabledModules.map((moduleId) => {
+              const mod = appModules.find((m) => m.id === moduleId);
               if (!mod) return null;
               return (
-                <motion.div
-                  key={m}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3 + enabledModules.indexOf(m) * 0.05 }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
-                  style={{ background: `${mod.color}15`, border: `1px solid ${mod.color}30` }}
+                <span
+                  key={moduleId}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium"
+                  style={{
+                    background: `${mod.color}20`,
+                    color: mod.color,
+                    border: `1px solid ${mod.color}40`,
+                  }}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" style={{ color: mod.color }}>
-                    {mod.icon}
-                  </svg>
-                  <span className="text-xs font-medium" style={{ color: mod.color }}>
-                    {mod.name}
-                  </span>
-                </motion.div>
+                  {mod.name}
+                </span>
               );
             })}
           </div>
 
-          {/* ─── Ошибка API (если была, но продолжили локально) ─── */}
-          {apiError ? (
-            <p className="text-xs mb-2" style={{ color: 'rgba(248,113,113,0.8)' }}>
-              ⚠️ Сохранено локально — {apiError}
+          {apiError && (
+            <p className="text-xs mb-3" style={{ color: '#F87171' }}>
+              {apiError}
             </p>
-          ) : null}
-
-          <p className="text-xs" style={{ color: colors.text.tertiary }}>
-            Остальное настроим по ходу дела — без лишних вопросов
-          </p>
+          )}
         </motion.div>
       </div>
 
+      {/* CTA */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-5 pt-3"
         style={{
-          background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 100%)',
           zIndex: 10,
         }}
       >
         <motion.button
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
           onClick={completeOnboarding}
           disabled={submitting}
-          className="w-full h-12 rounded-xl font-semibold relative overflow-hidden disabled:opacity-60"
-          style={{ background: gradients.gold, color: colors.bg.primary }}
-          whileTap={{ scale: 0.98 }}
+          className="w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2"
+          style={{
+            background: gradients.gold,
+            color: colors.bg.primary,
+            opacity: submitting ? 0.7 : 1,
+          }}
+          whileTap={submitting ? {} : { scale: 0.98 }}
         >
-          <motion.div
-            className="absolute inset-0"
-            style={{ background: gradients.shimmer }}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          />
-          <span className="relative z-10">
-            {submitting ? 'Сохраняем…' : 'Начать использовать'}
-          </span>
+          {submitting && (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          )}
+          <span>{submitting ? 'Сохраняем…' : 'Начать использовать'}</span>
         </motion.button>
       </div>
     </div>

@@ -52,16 +52,13 @@ interface BottomSheetProps {
 
 function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
-  
-  // Блокируем скролл при открытии
+
   useScrollLock(isOpen);
-  
-  // Закрытие по Escape
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
@@ -72,7 +69,6 @@ function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -82,8 +78,7 @@ function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
             style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
             onClick={onClose}
           />
-          
-          {/* Sheet */}
+
           <motion.div
             ref={sheetRef}
             initial={{ y: '100%' }}
@@ -100,14 +95,14 @@ function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div
-                className="w-10 h-1 rounded-full"
-                style={{ background: 'rgba(255, 255, 255, 0.2)' }}
-              />
+              <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255, 255, 255, 0.2)' }} />
             </div>
-            
+
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+            <div
+              className="flex items-center justify-between px-5 py-3 border-b"
+              style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            >
               <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                 {title}
               </h2>
@@ -120,8 +115,7 @@ function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
                 <XMarkIcon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
               </motion.button>
             </div>
-            
-            {/* Content */}
+
             <div className="overflow-y-auto max-h-[calc(85vh-80px)] pb-safe">
               {children}
             </div>
@@ -134,6 +128,7 @@ function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
 
 // ============================================================================
 // LANGUAGE SELECTOR CONTENT
+// Показываем только ru и uz — единственные языки, поддерживаемые API
 // ============================================================================
 
 interface LanguageSelectorContentProps {
@@ -142,7 +137,11 @@ interface LanguageSelectorContentProps {
 }
 
 function LanguageSelectorContent({ currentLocale, onSelect }: LanguageSelectorContentProps) {
-  const languages = getAvailableLanguages();
+  // Фильтруем до двух языков, поддерживаемых бэкендом
+  const AVAILABLE_LOCALES: Locale[] = ['ru', 'uz'];
+  const languages = getAvailableLanguages().filter((lang) =>
+    AVAILABLE_LOCALES.includes(lang.code)
+  );
   const { hapticFeedback } = useTelegram();
 
   const handleSelect = (locale: Locale) => {
@@ -159,36 +158,32 @@ function LanguageSelectorContent({ currentLocale, onSelect }: LanguageSelectorCo
           onClick={() => handleSelect(lang.code)}
           className="w-full flex items-center gap-4 p-4 rounded-2xl transition-all"
           style={{
-            background: currentLocale === lang.code 
-              ? 'linear-gradient(135deg, rgba(201, 169, 98, 0.2) 0%, rgba(201, 169, 98, 0.1) 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
-            border: currentLocale === lang.code 
-              ? '1px solid rgba(201, 169, 98, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+            background:
+              currentLocale === lang.code
+                ? 'linear-gradient(135deg, rgba(201, 169, 98, 0.2) 0%, rgba(201, 169, 98, 0.1) 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+            border:
+              currentLocale === lang.code
+                ? '1px solid rgba(201, 169, 98, 0.4)'
+                : '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
-          {/* Flag */}
           <span className="text-3xl">{lang.flag}</span>
-          
-          {/* Text */}
+
           <div className="flex-1 text-left">
-            <p 
+            <p
               className="text-base font-semibold"
-              style={{ 
-                color: currentLocale === lang.code ? 'var(--primary)' : 'var(--text-primary)' 
+              style={{
+                color: currentLocale === lang.code ? 'var(--primary)' : 'var(--text-primary)',
               }}
             >
               {lang.nativeName}
             </p>
-            <p 
-              className="text-sm"
-              style={{ color: 'var(--text-tertiary)' }}
-            >
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
               {lang.name}
             </p>
           </div>
-          
-          {/* Check */}
+
           {currentLocale === lang.code && (
             <motion.div
               initial={{ scale: 0 }}
@@ -217,7 +212,7 @@ interface ThemeSelectorContentProps {
 
 function ThemeSelectorContent({ currentTheme, onSelect, t }: ThemeSelectorContentProps) {
   const { hapticFeedback } = useTelegram();
-  
+
   const themes = [
     { id: 'dark' as const, icon: MoonIcon, label: t('profile.themeDark'), desc: 'Тёмные тона' },
     { id: 'light' as const, icon: SunIcon, label: t('profile.themeLight'), desc: 'Светлые тона' },
@@ -238,33 +233,38 @@ function ThemeSelectorContent({ currentTheme, onSelect, t }: ThemeSelectorConten
           onClick={() => handleSelect(theme.id)}
           className="w-full flex items-center gap-4 p-4 rounded-2xl transition-all"
           style={{
-            background: currentTheme === theme.id 
-              ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
-            border: currentTheme === theme.id 
-              ? '1px solid rgba(168, 85, 247, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+            background:
+              currentTheme === theme.id
+                ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+            border:
+              currentTheme === theme.id
+                ? '1px solid rgba(168, 85, 247, 0.4)'
+                : '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
-          <div 
+          <div
             className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ background: currentTheme === theme.id ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.1)' }}
+            style={{
+              background:
+                currentTheme === theme.id ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+            }}
           >
-            <theme.icon 
-              className="w-6 h-6" 
-              style={{ color: currentTheme === theme.id ? '#A855F7' : 'var(--text-secondary)' }} 
+            <theme.icon
+              className="w-6 h-6"
+              style={{ color: currentTheme === theme.id ? '#A855F7' : 'var(--text-secondary)' }}
             />
           </div>
-          
+
           <div className="flex-1 text-left">
-            <p 
+            <p
               className="text-base font-semibold"
               style={{ color: currentTheme === theme.id ? '#A855F7' : 'var(--text-primary)' }}
             >
               {theme.label}
             </p>
           </div>
-          
+
           {currentTheme === theme.id && (
             <motion.div
               initial={{ scale: 0 }}
@@ -293,7 +293,6 @@ interface CurrencySelectorContentProps {
 
 function CurrencySelectorContent({ currentCurrency, onSelect, t }: CurrencySelectorContentProps) {
   const { hapticFeedback } = useTelegram();
-  const { translations } = useTranslation();
 
   const handleSelect = (currency: string) => {
     hapticFeedback?.('selection');
@@ -309,17 +308,19 @@ function CurrencySelectorContent({ currentCurrency, onSelect, t }: CurrencySelec
           onClick={() => handleSelect(c.code)}
           className="flex items-center gap-3 p-4 rounded-2xl transition-all"
           style={{
-            background: currentCurrency === c.code 
-              ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
-            border: currentCurrency === c.code 
-              ? '1px solid rgba(34, 197, 94, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+            background:
+              currentCurrency === c.code
+                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+            border:
+              currentCurrency === c.code
+                ? '1px solid rgba(34, 197, 94, 0.4)'
+                : '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           <span className="text-2xl">{c.flag}</span>
           <div className="flex-1 text-left">
-            <p 
+            <p
               className="text-sm font-semibold"
               style={{ color: currentCurrency === c.code ? '#22C55E' : 'var(--text-primary)' }}
             >
@@ -347,7 +348,7 @@ export default function ProfilePage() {
   const { hapticFeedback } = useTelegram();
   const { t, locale, localeInfo } = useTranslation();
   const { formatCompactMoney } = useFormatters();
-  
+
   const profile = useStore((s) => s.profile);
   const transactions = useStore((s) => s.transactions);
   const updateSettings = useStore((s) => s.updateSettings);
@@ -356,29 +357,27 @@ export default function ProfilePage() {
   const setTheme = useStore((s) => s.setTheme);
   const resetStore = useStore((s) => s.resetStore);
   const addToast = useStore((s) => s.addToast);
-  
+
   const currency = profile?.finance?.currency || 'UZS';
   const theme = profile?.settings?.theme || 'dark';
-  
-  // Modals state
+
   const [showLangSheet, setShowLangSheet] = useState(false);
   const [showThemeSheet, setShowThemeSheet] = useState(false);
   const [showCurrencySheet, setShowCurrencySheet] = useState(false);
-  
-  // Handlers
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleLanguageChange = async (newLocale: Locale) => {
-    // 1. Применяем локально сразу (optimistic)
     setLanguage(newLocale);
     setShowLangSheet(false);
     try {
-      // 2. Сохраняем на сервере + перезагружаем bootstrap
       await changeLanguage(newLocale as any);
       addToast({ type: 'success', message: t('messages.saved') });
     } catch {
       addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
     }
   };
-  
+
   const handleThemeChange = async (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
     setShowThemeSheet(false);
@@ -389,7 +388,7 @@ export default function ProfilePage() {
       addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
     }
   };
-  
+
   const handleCurrencyChange = async (newCurrency: string) => {
     updateFinance({ currency: newCurrency });
     setShowCurrencySheet(false);
@@ -400,7 +399,7 @@ export default function ProfilePage() {
       addToast({ type: 'error', message: t('messages.error') || 'Ошибка сохранения' });
     }
   };
-  
+
   const handleReset = () => {
     hapticFeedback?.('notification', 'warning');
     if (confirm(t('messages.confirmDelete'))) {
@@ -408,50 +407,66 @@ export default function ProfilePage() {
       router.push('/onboarding');
     }
   };
-  
-  // Stats
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+
   const stats = {
     totalTransactions: transactions.length,
-    totalIncome: transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
-    totalExpenses: transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+    totalIncome: transactions
+      .filter((tx) => tx.type === 'income')
+      .reduce((s, tx) => s + tx.amount, 0),
+    totalExpenses: transactions
+      .filter((tx) => tx.type === 'expense')
+      .reduce((s, tx) => s + tx.amount, 0),
   };
 
-  // Menu items
+  // ── Menu items ────────────────────────────────────────────────────────────
+
   const menuItems = [
-    { 
-      icon: GlobeAltIcon, 
-      label: t('profile.language'), 
-      value: `${localeInfo.flag} ${localeInfo.nativeName}`, 
-      onClick: () => setShowLangSheet(true), 
-      color: '#3B82F6' 
+    {
+      icon: GlobeAltIcon,
+      label: t('profile.language'),
+      value: `${localeInfo.flag} ${localeInfo.nativeName}`,
+      onClick: () => setShowLangSheet(true),
+      color: '#3B82F6',
     },
-    { 
-      icon: PaintBrushIcon, 
-      label: t('profile.theme'), 
-      value: theme === 'dark' ? t('profile.themeDark') : theme === 'light' ? t('profile.themeLight') : t('profile.themeSystem'), 
-      onClick: () => setShowThemeSheet(true), 
-      color: '#A855F7' 
+    {
+      icon: PaintBrushIcon,
+      label: t('profile.theme'),
+      value:
+        theme === 'dark'
+          ? t('profile.themeDark')
+          : theme === 'light'
+          ? t('profile.themeLight')
+          : t('profile.themeSystem'),
+      onClick: () => setShowThemeSheet(true),
+      color: '#A855F7',
     },
-    { 
-      icon: CurrencyDollarIcon, 
-      label: t('profile.currency'), 
-      value: `${CURRENCY_OPTIONS.find(c => c.code === currency)?.flag || ''} ${currency}`, 
-      onClick: () => setShowCurrencySheet(true), 
-      color: '#22C55E' 
+    {
+      icon: CurrencyDollarIcon,
+      label: t('profile.currency'),
+      value: `${CURRENCY_OPTIONS.find((c) => c.code === currency)?.flag || ''} ${currency}`,
+      onClick: () => setShowCurrencySheet(true),
+      color: '#22C55E',
     },
   ];
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
       <div className="min-h-screen relative">
-        {/* Background */}
+        {/* Background glow */}
         <div className="fixed inset-0 pointer-events-none">
-          <div 
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50%]" 
-            style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201, 169, 98, 0.12) 0%, transparent 60%)' }} 
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50%]"
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201, 169, 98, 0.12) 0%, transparent 60%)',
+            }}
           />
         </div>
-        
+
         <div className="page-scrollable relative">
           {/* Header */}
           <header className="px-4 pt-2 pb-4">
@@ -459,82 +474,84 @@ export default function ProfilePage() {
               {t('profile.title')}
             </h1>
           </header>
-          
+
           <main className="px-4 space-y-4 pb-32">
             {/* User Card */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              animate={{ opacity: 1, y: 0 }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               className="p-5 rounded-2xl"
-              style={{ 
-                background: 'linear-gradient(135deg, rgba(201, 169, 98, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)', 
-                border: '1px solid rgba(201, 169, 98, 0.2)' 
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(201, 169, 98, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                border: '1px solid rgba(201, 169, 98, 0.2)',
               }}
             >
               <div className="flex items-center gap-4">
-                <div 
+                <div
                   className="w-16 h-16 rounded-2xl flex items-center justify-center"
                   style={{ background: 'rgba(201, 169, 98, 0.2)' }}
                 >
                   {profile?.name ? (
-                    <span className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
+                    <span className="text-2xl font-bold" style={{ color: '#C9A962' }}>
                       {profile.name.charAt(0).toUpperCase()}
                     </span>
                   ) : (
-                    <UserIcon className="w-8 h-8" style={{ color: 'var(--primary)' }} />
+                    <UserIcon className="w-8 h-8" style={{ color: '#C9A962' }} />
                   )}
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+
+                <div className="flex-1 min-w-0">
+                  <h2
+                    className="text-lg font-bold truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {profile?.name || t('profile.taskflowUser')}
                   </h2>
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    LifeLedger • {localeInfo.nativeName}
+                  <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                    LifeLedger
                   </p>
                 </div>
               </div>
             </motion.div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-2">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 gap-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="p-3 rounded-xl text-center"
-                style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                style={{
+                  background: 'rgba(74, 222, 128, 0.1)',
+                  border: '1px solid rgba(74, 222, 128, 0.2)',
+                }}
               >
-                <p className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {stats.totalTransactions}
-                </p>
-                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {t('finance.transactions')}
-                </p>
-              </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="p-3 rounded-xl text-center"
-                style={{ background: 'rgba(74, 222, 128, 0.1)', border: '1px solid rgba(74, 222, 128, 0.2)' }}
-              >
-                <p className="text-base font-bold truncate" style={{ color: '#4ADE80' }}>
+                <p
+                  className="text-base font-bold truncate"
+                  style={{ color: '#4ADE80' }}
+                >
                   +{formatCompactMoney(stats.totalIncome)}
                 </p>
                 <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
                   {t('finance.income')}
                 </p>
               </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className="p-3 rounded-xl text-center"
-                style={{ background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)' }}
+                style={{
+                  background: 'rgba(248, 113, 113, 0.1)',
+                  border: '1px solid rgba(248, 113, 113, 0.2)',
+                }}
               >
-                <p className="text-base font-bold truncate" style={{ color: '#F87171' }}>
+                <p
+                  className="text-base font-bold truncate"
+                  style={{ color: '#F87171' }}
+                >
                   -{formatCompactMoney(stats.totalExpenses)}
                 </p>
                 <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
@@ -542,64 +559,72 @@ export default function ProfilePage() {
                 </p>
               </motion.div>
             </div>
-            
+
             {/* Settings Menu */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
               className="space-y-2"
             >
-              <h3 className="text-sm font-semibold px-1 mb-3" style={{ color: 'var(--text-secondary)' }}>
+              <h3
+                className="text-sm font-semibold px-1 mb-3"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 {t('profile.settings')}
               </h3>
-              
+
               {menuItems.map((item, index) => (
                 <motion.button
                   key={index}
                   whileTap={{ scale: 0.98 }}
                   onClick={item.onClick}
-                  className="w-full flex items-center justify-between p-4 rounded-xl transition-all"
-                  style={{ 
-                    background: 'rgba(255, 255, 255, 0.05)', 
-                    border: '1px solid rgba(255, 255, 255, 0.08)' 
+                  className="w-full flex items-center gap-3 p-4 rounded-2xl text-left"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                   }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ background: `${item.color}20` }}
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${item.color}20` }}
+                  >
+                    <item.icon className="w-5 h-5" style={{ color: item.color }} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--text-primary)' }}
                     >
-                      <item.icon className="w-5 h-5" style={{ color: item.color }} />
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                       {item.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    </p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>
                       {item.value}
-                    </span>
-                    <ChevronRightIcon className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
+                    </p>
                   </div>
+
+                  <ChevronRightIcon
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  />
                 </motion.button>
               ))}
             </motion.div>
-            
-            {/* Danger Zone */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
+
+            {/* Danger zone */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="pt-4"
+              transition={{ delay: 0.35 }}
             >
-              <motion.button 
-                whileTap={{ scale: 0.98 }} 
-                onClick={handleReset} 
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={handleReset}
                 className="w-full flex items-center justify-center gap-2 p-4 rounded-xl"
-                style={{ 
-                  background: 'rgba(248, 113, 113, 0.1)', 
-                  border: '1px solid rgba(248, 113, 113, 0.2)' 
+                style={{
+                  background: 'rgba(248, 113, 113, 0.1)',
+                  border: '1px solid rgba(248, 113, 113, 0.2)',
                 }}
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5" style={{ color: '#F87171' }} />
@@ -608,7 +633,7 @@ export default function ProfilePage() {
                 </span>
               </motion.button>
             </motion.div>
-            
+
             {/* Version */}
             <p className="text-center text-xs pt-4" style={{ color: 'var(--text-tertiary)' }}>
               LifeLedger v2.0.0
@@ -616,41 +641,30 @@ export default function ProfilePage() {
           </main>
         </div>
       </div>
-      
+
       {/* Bottom Sheets */}
       <BottomSheet
         isOpen={showLangSheet}
         onClose={() => setShowLangSheet(false)}
         title={t('profile.selectLanguage')}
       >
-        <LanguageSelectorContent
-          currentLocale={locale}
-          onSelect={handleLanguageChange}
-        />
+        <LanguageSelectorContent currentLocale={locale} onSelect={handleLanguageChange} />
       </BottomSheet>
-      
+
       <BottomSheet
         isOpen={showThemeSheet}
         onClose={() => setShowThemeSheet(false)}
         title={t('profile.theme')}
       >
-        <ThemeSelectorContent
-          currentTheme={theme}
-          onSelect={handleThemeChange}
-          t={t}
-        />
+        <ThemeSelectorContent currentTheme={theme} onSelect={handleThemeChange} t={t} />
       </BottomSheet>
-      
+
       <BottomSheet
         isOpen={showCurrencySheet}
         onClose={() => setShowCurrencySheet(false)}
         title={t('profile.currency')}
       >
-        <CurrencySelectorContent
-          currentCurrency={currency}
-          onSelect={handleCurrencyChange}
-          t={t}
-        />
+        <CurrencySelectorContent currentCurrency={currency} onSelect={handleCurrencyChange} t={t} />
       </BottomSheet>
     </>
   );
