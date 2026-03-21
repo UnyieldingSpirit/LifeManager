@@ -234,6 +234,19 @@ export default function EnhancedMainWrapper({ children }: EnhancedMainWrapperPro
     }
   }, [colorScheme, isReady, theme]);
 
+useEffect(() => {
+  const handleEnter = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const el = e.target as HTMLElement;
+      if (el.tagName === 'INPUT') {
+        el.blur();
+      }
+    }
+  };
+  document.addEventListener('keydown', handleEnter);
+  return () => document.removeEventListener('keydown', handleEnter);
+}, []);
+
   useEffect(() => { setTheme(theme); }, [theme, setTheme]);
 
   useEffect(() => {

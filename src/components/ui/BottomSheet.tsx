@@ -44,22 +44,22 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur */}
+          {/* Backdrop — только затемнение, БЕЗ blur чтобы не глючило при фокусе инпута */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50"
-            style={{ 
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
+            style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              // backdropFilter намеренно убран — на iOS при открытии клавиатуры
+              // blur на backdrop вызывает глитч и пропадание эффекта
             }}
             onClick={handleClose}
           />
-          
-          {/* Sheet */}
+
+          {/* Sheet — НЕПРОЗРАЧНЫЙ фон, никакого backdropFilter */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -71,47 +71,44 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
             dragElastic={{ top: 0, bottom: 0.4 }}
             onDragEnd={handleDragEnd}
             className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-hidden flex flex-col"
-            style={{ 
-              background: 'var(--glass-bg-heavy)',
-              backdropFilter: 'blur(var(--glass-blur-heavy))',
-              WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-              borderTopLeftRadius: 'var(--radius-2xl)',
-              borderTopRightRadius: 'var(--radius-2xl)',
-              border: '1px solid var(--glass-border)',
+            style={{
+              // Полностью непрозрачный фон — решает проблему blur при открытии клавиатуры
+              background: '#161616',
+              borderTopLeftRadius: '20px',
+              borderTopRightRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               borderBottom: 'none',
-              boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 -8px 40px rgba(0, 0, 0, 0.5), 0 -1px 0 rgba(255, 255, 255, 0.06)',
             }}
           >
-            {/* Gradient overlay */}
-            <div 
-              className="absolute inset-0 pointer-events-none opacity-30"
+            {/* Тонкий золотой градиент сверху для премиум-ощущения */}
+            <div
+              className="absolute top-0 left-0 right-0 h-px pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, var(--primary-subtle) 0%, transparent 30%)',
-                borderTopLeftRadius: 'var(--radius-2xl)',
-                borderTopRightRadius: 'var(--radius-2xl)',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(201,169,98,0.4) 50%, transparent 100%)',
               }}
             />
 
             {/* Handle */}
-            <div 
+            <div
               className="relative flex justify-center pt-2.5 pb-2 cursor-grab active:cursor-grabbing"
               onPointerDown={(e) => dragControls.start(e)}
             >
-              <div 
+              <div
                 className="w-9 h-1 rounded-full"
-                style={{ backgroundColor: 'var(--border-hover)' }}
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.18)' }}
               />
             </div>
 
             {/* Header */}
             {title && (
-              <div 
+              <div
                 className="relative flex items-center justify-between px-4 pb-3"
-                style={{ borderBottom: '1px solid var(--border)' }}
+                style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}
               >
-                <h2 
+                <h2
                   className="text-base font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
+                  style={{ color: '#F5F5F5' }}
                 >
                   {title}
                 </h2>
@@ -119,14 +116,14 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
                   whileTap={{ scale: 0.9 }}
                   onClick={handleClose}
                   className="w-7 h-7 flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: 'var(--surface-dim)' }}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
                 >
-                  <svg 
-                    className="w-4 h-4" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
-                    style={{ color: 'var(--text-secondary)' }}
+                    style={{ color: '#A3A3A3' }}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
